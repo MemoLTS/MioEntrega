@@ -37,7 +37,7 @@ class CatalogControllerTest {
 
         @InjectMocks
         private CatalogController controller;
-        @SuppressWarnings("removal")
+
         @MockBean
         private CatalogService service;
 

@@ -19,7 +19,6 @@ class CatalogControllerIT {
         @Autowired
         private MockMvc mockMvc;
 
-        @SuppressWarnings("removal")
         @MockBean
         private CatalogService service;
 }

@@ -20,7 +20,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.web.servlet.MockMvc;
 @SpringBootTest(classes = Inventario.class)
 @AutoConfigureMockMvc
-class InvControllerIntegrationTest {
+class InvControllerIT {
 
     @Autowired
     private MockMvc mockMvc;

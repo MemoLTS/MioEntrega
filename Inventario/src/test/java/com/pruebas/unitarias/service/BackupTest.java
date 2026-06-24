@@ -70,52 +70,27 @@ class BackupServiceTest {
                 "mysqlDumpPath",
                 "echo"
         );
-    }
-    @Test
-    void testBackupStatusError() throws Exception {
+        }
+        @Test
+        void testBackupStatusError() {
 
-    ReflectionTestUtils.setField(
-            backupService,
-            "datasourceUrl",
-            "jdbc:mysql://localhost:3306/inventario"
-    );
+        ReflectionTestUtils.setField(
+                backupService,
+                "mysqlDumpPath",
+                "ruta_inexistente");
 
-    ReflectionTestUtils.setField(
-            backupService,
-            "dbUser",
-            "root"
-    );
-
-    ReflectionTestUtils.setField(
-            backupService,
-            "backupPath",
-            "C:/temp/"
-    );
-
-    ReflectionTestUtils.setField(
-            backupService,
-            "mysqlDumpPath",
-            "mysqldump"
-    );
-
-    doReturn(process).when(backupService).startProcess(any());
-
-    when(process.waitFor()).thenReturn(1);
-
-    when(backupLogRepository.save(any(BackupLogs.class)))
-            .thenAnswer(i -> i.getArgument(0));
-
-    backupService.realizarBackup();
-
-    ArgumentCaptor<BackupLogs> captor =
-            ArgumentCaptor.forClass(BackupLogs.class);
-
-    verify(backupLogRepository).save(captor.capture());
-
-    assertEquals("ERROR", captor.getValue().getStatus());
+        when(backupLogRepository.save(any(BackupLogs.class)))
+                .thenAnswer(i -> i.getArgument(0));
 
         backupService.realizarBackup();
-    }
+
+        ArgumentCaptor<BackupLogs> captor =
+                ArgumentCaptor.forClass(BackupLogs.class);
+
+        verify(backupLogRepository).save(captor.capture());
+
+        assertEquals("ERROR", captor.getValue().getStatus());
+        }
         @Test
         void testBackupInicial_noFalla() {
             backupService.backupInicial();

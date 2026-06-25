@@ -1,10 +1,13 @@
 package com.pruebas.unitarias.controller;
 
+import com.caso3.inventario.Inventario;
 import com.caso3.inventario.controller.InvController;
+import com.caso3.inventario.dto.LogDTO;
 import com.caso3.inventario.dto.StockResponse;
 import com.caso3.inventario.model.Categoria;
 import com.caso3.inventario.model.Producto;
 import com.caso3.inventario.service.InvService;
+import com.caso3.inventario.service.LogService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import org.junit.jupiter.api.Test;
@@ -14,6 +17,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.ContextConfiguration;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -32,19 +36,20 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+
 @WebMvcTest(InvController.class)
-@ContextConfiguration(classes = {InvController.class})
+@ContextConfiguration(classes = Inventario.class)
 class InvControllerTest {
 
         @Autowired
         private MockMvc mockMvc;
-
         @Autowired
         private ObjectMapper objectMapper;
-
         @MockBean
         private InvService service;
 
+        @MockBean
+        private LogService logservice;
         private Producto crearProducto() {
         return new Producto(
                 1L,
@@ -55,33 +60,34 @@ class InvControllerTest {
         }
 
         @Test
+        void testListarLogs() throws Exception {
+        List<LogDTO> logs = new ArrayList<>();
+        when(logservice.listar()).thenReturn(logs);
+        mockMvc.perform(get("/api/inventario/logs"))
+                .andExpect(status().isOk());
+        verify(logservice).listar();
+        }
+        @Test
         void testConsultarStock() throws Exception {
-
                 StockResponse response = new StockResponse(
                         1L,
                         "Mouse",
                         20
                 );
-
                 when(service.consultarStock(1L))
                         .thenReturn(response);
-
                 mockMvc.perform(get("/api/inventario/stock/1"))
                         .andExpect(status().isOk())
                         .andExpect(jsonPath("$.idProducto").value(1))
                         .andExpect(jsonPath("$.nombre").value("Mouse"))
                         .andExpect(jsonPath("$.stock").value(20));
-
                 verify(service).consultarStock(1L);
         }
         @Test
         void testGetProductos() throws Exception {
-
                 Producto producto = crearProducto();
-
                 when(service.readAllProd())
                         .thenReturn(List.of(producto));
-
                 mockMvc.perform(get("/api/inventario/productos"))
                         .andExpect(status().isOk())
                         .andExpect(jsonPath("$[0].id").value(1))
@@ -90,12 +96,9 @@ class InvControllerTest {
 
         @Test
         void testPostProductoCreado() throws Exception {
-
                 Producto producto = crearProducto();
-
                 when(service.register(any(Producto.class)))
                         .thenReturn(producto);
-
                 mockMvc.perform(post("/api/inventario/addprod")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(producto)))
@@ -105,12 +108,9 @@ class InvControllerTest {
 
         @Test
         void testPostProductoError() throws Exception {
-
                 Producto producto = crearProducto();
-
                 when(service.register(any(Producto.class)))
                         .thenReturn(null);
-
                 mockMvc.perform(post("/api/inventario/addprod")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(producto)))

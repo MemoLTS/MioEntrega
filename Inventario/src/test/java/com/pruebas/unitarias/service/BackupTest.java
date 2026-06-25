@@ -24,6 +24,9 @@ import com.caso3.inventario.repository.BackupLogRepository;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import java.io.File;
+import java.lang.reflect.Method;
+
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 
 @ExtendWith(MockitoExtension.class)
@@ -48,53 +51,75 @@ class BackupServiceTest {
                 Process result = backupService.startProcess(pb);
                 assertNotNull(result);
                 assertEquals(process, result);
-                }
+        }
+
         @Test
         void testRealizarBackup_OK2() {
-
                 ReflectionTestUtils.setField(
                         backupService,
                         "datasourceUrl",
                         "jdbc:mysql://localhost:3306/inventario"
                 );
-
                 ReflectionTestUtils.setField(
                         backupService,
                         "dbUser",
                         "root"
                 );
-
                 ReflectionTestUtils.setField(
                         backupService,
                         "backupPath",
                         "C:/temp/"
                 );
-
                 ReflectionTestUtils.setField(
                         backupService,
                         "mysqlDumpPath",
                         "echo"
                 );
-                }
+        }
+
         @Test
         void testBackupStatusError() {
                 ReflectionTestUtils.setField(
                         backupService,
                         "mysqlDumpPath",
                         "ruta_inexistente");
-
                 when(backupLogRepository.save(any(BackupLogs.class)))
                         .thenAnswer(i -> i.getArgument(0));
-
                 backupService.realizarBackup();
-
                 ArgumentCaptor<BackupLogs> captor =
                         ArgumentCaptor.forClass(BackupLogs.class);
-
                 verify(backupLogRepository).save(captor.capture());
-
                 assertEquals("ERROR", captor.getValue().getStatus());
-                }
+        }
+
+        @Test
+        void testCrearDirectorio() {
+        ReflectionTestUtils.setField(
+                backupService,
+                "backupPath",
+                "target/pruebaBackup/"
+        );
+        ReflectionTestUtils.setField(
+                backupService,
+                "mysqlDumpPath",
+                "ruta_inexistente"
+        );
+        backupService.realizarBackup();
+        assertTrue(new File("target/pruebaBackup/").exists());
+        }
+
+        @Test
+        void testExtractDbName() throws Exception {
+        Method m = BackupService.class.getDeclaredMethod(
+                "extractDbName",
+                String.class);
+        m.setAccessible(true);
+        String db = (String) m.invoke(
+                backupService,
+                "jdbc:mysql://localhost:3306/inventario");
+        assertEquals("inventario", db);
+        }
+
         @Test
         void testBackupInicial_noFalla() {
                         backupService.backupInicial();

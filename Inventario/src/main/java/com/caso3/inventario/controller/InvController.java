@@ -18,10 +18,12 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.caso3.inventario.dto.LogDTO;
 import com.caso3.inventario.dto.StockResponse;
 import com.caso3.inventario.model.Categoria;
 import com.caso3.inventario.model.Producto;
 import com.caso3.inventario.service.InvService;
+import com.caso3.inventario.service.LogService;
 
 @RestController
 @RequestMapping("/api/inventario")
@@ -29,8 +31,18 @@ public class InvController {
 
     @Autowired
     private InvService service;
+    @Autowired
+    private LogService logservice;
 
-    // Obtener todos los productos
+    @GetMapping("/logs")
+    public ResponseEntity<List<LogDTO>> listar() {
+        return ResponseEntity.ok(logservice.listar());
+    }
+    @PostMapping("/Logs")
+    public ResponseEntity<LogDTO> guardar(@RequestBody LogDTO log) {
+        return ResponseEntity.ok(logservice.guardar(log));
+    }
+
     @GetMapping("/productos")
     public List<Producto> getProductos() {
         return service.readAllProd();
@@ -48,7 +60,7 @@ public class InvController {
                 .body("Error al registrar producto");
     }
 
-    // Buscar producto por ID
+
     @GetMapping("/productos/{id}")
     public Optional<Producto>getProducto(@PathVariable Long id) {
         return service.readByid(id);

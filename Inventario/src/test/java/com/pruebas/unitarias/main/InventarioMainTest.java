@@ -15,4 +15,4 @@ class InvenatarioMainTests {
         void contextLoads() {
         }
 
-        }
+}

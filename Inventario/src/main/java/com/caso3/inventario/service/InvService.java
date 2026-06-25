@@ -8,6 +8,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
+import com.caso3.inventario.dto.StockResponse;
 import com.caso3.inventario.model.Categoria;
 import com.caso3.inventario.model.Producto;
 import com.caso3.inventario.repository.ProductoRepository;
@@ -24,10 +25,17 @@ public class InvService {
         return Repository.findById(id);
     }
 
-    public List<Producto> readByCategoria(Categoria categoria) {
-        return Repository.findByCategoria(categoria);
-    }
+    public StockResponse consultarStock(Long idProducto) {
 
+        Producto producto = Repository.findById(idProducto)
+                .orElseThrow(() -> new RuntimeException("Producto no encontrado"));
+
+        return new StockResponse(
+                producto.getId(),
+                producto.getNombre(),
+                producto.getStock());
+    }
+    
     public Producto updateProducto(Long id, Producto datosNuevos) {
         Producto existente = Repository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Producto no encontrado"));

@@ -1,6 +1,7 @@
 package com.pruebas.unitarias.controller;
 
 import com.caso3.inventario.controller.InvController;
+import com.caso3.inventario.dto.StockResponse;
 import com.caso3.inventario.model.Categoria;
 import com.caso3.inventario.model.Producto;
 import com.caso3.inventario.service.InvService;
@@ -19,7 +20,7 @@ import java.util.Optional;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doThrow;
-
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -53,6 +54,26 @@ class InvControllerTest {
                 Categoria.ELECTRODOMESTICOS);
         }
 
+        @Test
+        void testConsultarStock() throws Exception {
+
+                StockResponse response = new StockResponse(
+                        1L,
+                        "Mouse",
+                        20
+                );
+
+                when(service.consultarStock(1L))
+                        .thenReturn(response);
+
+                mockMvc.perform(get("/api/inventario/stock/1"))
+                        .andExpect(status().isOk())
+                        .andExpect(jsonPath("$.idProducto").value(1))
+                        .andExpect(jsonPath("$.nombre").value("Mouse"))
+                        .andExpect(jsonPath("$.stock").value(20));
+
+                verify(service).consultarStock(1L);
+        }
         @Test
         void testGetProductos() throws Exception {
 

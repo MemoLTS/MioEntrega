@@ -25,6 +25,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.server.ResponseStatusException;
 
+import com.caso3.inventario.dto.StockResponse;
 import com.caso3.inventario.model.Categoria;
 import com.caso3.inventario.model.Producto;
 import com.caso3.inventario.service.InvService;
@@ -45,7 +46,40 @@ class InvenServiceTest {
         }
         @ExtendWith(MockitoExtension.class)
 
+        @Test
+        void testConsultarStock() {
 
+                Producto producto = new Producto();
+                producto.setId(1L);
+                producto.setNombre("Mouse");
+                producto.setStock(20);
+
+                when(repository.findById(1L))
+                        .thenReturn(Optional.of(producto));
+
+                StockResponse response = service.consultarStock(1L);
+
+                assertNotNull(response);
+                assertEquals(1L, response.getIdProducto());
+                assertEquals("Mouse", response.getNombre());
+                assertEquals(20, response.getStock());
+
+                verify(repository).findById(1L);
+        }
+
+        @Test
+        void testConsultarStockProductoNoExiste() {
+
+                when(repository.findById(1L))
+                        .thenReturn(Optional.empty());
+
+                RuntimeException ex = assertThrows(RuntimeException.class,
+                        () -> service.consultarStock(1L));
+
+                assertEquals("Producto no encontrado", ex.getMessage());
+
+                verify(repository).findById(1L);
+        }
         @Test
         void testReadById_ok() {
         Producto producto = new Producto();
@@ -281,7 +315,7 @@ class InvenServiceTest {
                         .thenReturn(productos);
 
                 List<Producto> resultado =
-                        service.readByCategoria(Categoria.ELECTRODOMESTICOS);
+                        service.buscarPorCategoria(Categoria.ELECTRODOMESTICOS);
 
                 assertThat(resultado).hasSize(1);
                 assertThat(resultado).contains(producto);

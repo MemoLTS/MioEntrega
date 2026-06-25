@@ -18,6 +18,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.caso3.inventario.dto.StockResponse;
 import com.caso3.inventario.model.Categoria;
 import com.caso3.inventario.model.Producto;
 import com.caso3.inventario.service.InvService;
@@ -86,8 +87,10 @@ public class InvController {
                     .body("Producto no encontrado");
         }
     }
-
-    // Eliminar producto
+    @GetMapping("/stock/{id}")
+    public ResponseEntity<StockResponse> consultarStock(@PathVariable Long id) {
+        return ResponseEntity.ok(service.consultarStock(id));
+    }
     @DeleteMapping("/deleteprod/{id}")
     public ResponseEntity<?> deleteProducto(@PathVariable Long id) {
         try {

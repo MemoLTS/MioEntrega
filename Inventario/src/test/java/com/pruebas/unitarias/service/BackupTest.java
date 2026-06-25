@@ -76,9 +76,8 @@ class BackupServiceTest {
                         "echo"
                 );
                 }
-                @Test
-                void testBackupStatusError() {
-
+        @Test
+        void testBackupStatusError() {
                 ReflectionTestUtils.setField(
                         backupService,
                         "mysqlDumpPath",
@@ -96,8 +95,8 @@ class BackupServiceTest {
 
                 assertEquals("ERROR", captor.getValue().getStatus());
                 }
-                @Test
-                void testBackupInicial_noFalla() {
+        @Test
+        void testBackupInicial_noFalla() {
                         backupService.backupInicial();
                 assertTrue(true); // si no lanza excepción, pasa
                 }

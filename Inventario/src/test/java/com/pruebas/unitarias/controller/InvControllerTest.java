@@ -120,12 +120,9 @@ class InvControllerTest {
 
         @Test
         void testGetProductoPorId() throws Exception {
-
                 Producto producto = crearProducto();
-
                 when(service.readByid(1L))
                         .thenReturn(Optional.of(producto));
-
                 mockMvc.perform(get("/api/inventario/productos/1"))
                         .andExpect(status().isOk())
                         .andExpect(jsonPath("$.nombre").value("Laptop"));
@@ -133,22 +130,17 @@ class InvControllerTest {
 
         @Test
         void testUpdateProductoOk() throws Exception {
-
                 Producto existente = crearProducto();
-
                 Producto actualizado = new Producto(
                         1L,
                         "Laptop Gamer",
                         2500000.0,
                         20,
                         Categoria.ELECTRODOMESTICOS);
-
                 when(service.readAllProd())
                         .thenReturn(List.of(existente));
-
                 when(service.register(any(Producto.class)))
                         .thenReturn(actualizado);
-
                 mockMvc.perform(put("/api/inventario/updateprod/1")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(actualizado)))
@@ -158,12 +150,9 @@ class InvControllerTest {
 
         @Test
         void testUpdateProductoNotFound() throws Exception {
-
                 Producto producto = crearProducto();
-
                 when(service.readAllProd())
                         .thenReturn(List.of());
-
                 mockMvc.perform(put("/api/inventario/updateprod/1")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(producto)))
@@ -173,25 +162,20 @@ class InvControllerTest {
 
         @Test
         void testUpdateStockOk() throws Exception {
-
-        Producto producto = new Producto();
-        producto.setId(1L);
-        producto.setStock(50);
-
-        when(service.updateStock(1L, 50))
-                .thenReturn(producto);
-
-        mockMvc.perform(put("/api/inventario/updateprod/1/50"))
-                .andExpect(status().isOk());
+                Producto producto = new Producto();
+                producto.setId(1L);
+                producto.setStock(50);
+                when(service.updateStock(1L, 50))
+                        .thenReturn(producto);
+                mockMvc.perform(put("/api/inventario/updateprod/1/50"))
+                        .andExpect(status().isOk());
         }
 
         @Test
         void testUpdateStockNotFound() throws Exception {
-
                 doThrow(new RuntimeException())
                         .when(service)
                         .updateStock(1L, 50);
-
                 mockMvc.perform(put("/api/inventario/updateprod/1/50"))
                         .andExpect(status().isNotFound())
                         .andExpect(content().string("Producto no encontrado"));
@@ -199,9 +183,7 @@ class InvControllerTest {
 
         @Test
         void testDeleteProductoOk() throws Exception {
-
                 doNothing().when(service).deleteById(1L);
-
                 mockMvc.perform(delete("/api/inventario/deleteprod/1"))
                         .andExpect(status().isOk())
                         .andExpect(content().string("Producto eliminado"));
@@ -209,11 +191,9 @@ class InvControllerTest {
 
         @Test
         void testDeleteProductoNotFound() throws Exception {
-
                 doThrow(new RuntimeException())
                         .when(service)
                         .deleteById(1L);
-
                 mockMvc.perform(delete("/api/inventario/deleteprod/1"))
                         .andExpect(status().isNotFound())
                         .andExpect(content().string("Producto no encontrado"));
@@ -221,12 +201,9 @@ class InvControllerTest {
 
         @Test
         void testGetProductosPorCategoria() throws Exception {
-
                 Producto producto = crearProducto();
-
                 when(service.buscarPorCategoria(Categoria.ELECTRODOMESTICOS))
                         .thenReturn(List.of(producto));
-
                 mockMvc.perform(
                         get("/api/inventario/productos/buscar/categoria/ELECTRODOMESTICOS"))
                         .andExpect(status().isOk())
@@ -235,12 +212,9 @@ class InvControllerTest {
 
         @Test
         void testGetProductoOrdenadoPorCategoria() throws Exception {
-
                 Producto producto = crearProducto();
-
                 when(service.buscarPorCategoria(Categoria.ELECTRODOMESTICOS))
                         .thenReturn(List.of(producto));
-
                 mockMvc.perform(
                         get("/api/inventario/productos/ordenados/categoria/ELECTRODOMESTICOS"))
                         .andExpect(status().isOk())
@@ -249,15 +223,50 @@ class InvControllerTest {
 
         @Test
         void testGetPorNombre() throws Exception {
-
                 Producto producto = crearProducto();
-
                 when(service.readAllProd())
                         .thenReturn(List.of(producto));
-
                 mockMvc.perform(
                         get("/api/inventario/productos/nombre/Lap"))
                         .andExpect(status().isOk())
                         .andExpect(jsonPath("$[0].nombre").value("Laptop"));
+        }
+        @Test
+        void testVerificarDisponibilidad() throws Exception {
+                StockResponse response =
+                        new StockResponse(1L, "Leche", 20, true);
+                when(service.verificarDisponibilidad(1L, 5))
+                        .thenReturn(response);
+                mockMvc.perform(
+                        get("/api/inventario/disponibilidad/1/5"))
+                        .andExpect(status().isOk())
+                        .andExpect(jsonPath("$.idProducto").value(1))
+                        .andExpect(jsonPath("$.nombre").value("Leche"))
+                        .andExpect(jsonPath("$.stock").value(20))
+                        .andExpect(jsonPath("$.disponible").value(true));
+                verify(service).verificarDisponibilidad(1L, 5);
+        }
+
+        @Test
+        void testVerificarBajoStock() throws Exception {
+                StockResponse response = new StockResponse();
+                response.setIdProducto(1L);
+                response.setNombre("Leche");
+                response.setStock(2);
+                response.setAlertaBajoStock(true);
+                when(service.verificarBajoStock(1L))
+                        .thenReturn(response);
+                mockMvc.perform(get("/api/inventario/alerta/1"))
+                        .andExpect(status().isOk())
+                        .andExpect(jsonPath("$.alertaBajoStock").value(true));
+                verify(service).verificarBajoStock(1L);
+                }
+        @Test
+        void testVerificarDisponibilidadNotFound() throws Exception {
+        when(service.verificarDisponibilidad(1L, 5))
+                .thenThrow(new RuntimeException("Producto no encontrado"));
+        mockMvc.perform(get("/api/inventario/disponibilidad/1/5"))
+                .andExpect(status().isNotFound());
+        verify(service).verificarDisponibilidad(1L, 5);
         }
 }

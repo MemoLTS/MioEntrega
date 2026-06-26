@@ -89,11 +89,9 @@ public class InvController {
     public ResponseEntity<?> updateStock(
             @PathVariable Long id,
             @PathVariable int stock) {
-
         try {
             service.updateStock(id, stock);
             return ResponseEntity.ok("Stock actualizado");
-
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
                     .body("Producto no encontrado");
@@ -127,14 +125,37 @@ public class InvController {
     @GetMapping("/productos/nombre/{nombre}")
     public ResponseEntity<List<Producto>> getPorNombre(
             @PathVariable String nombre){
-
         List<Producto> productos = service.readAllProd()
                 .stream()
                 .filter(p -> p.getNombre()
                         .toLowerCase()
                         .contains(nombre.toLowerCase()))
                 .toList();
-
         return ResponseEntity.ok(productos);
-}
+    }
+    @GetMapping("/alerta/{id}")
+    public ResponseEntity<?> verificarBajoStock(@PathVariable Long id) {
+        try {
+            return ResponseEntity.ok(
+                    service.verificarBajoStock(id));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body("Producto no encontrado");
+        }
+    }
+    @GetMapping("/disponibilidad/{id}/{cantidad}")
+    public ResponseEntity<?> verificarDisponibilidad(
+            @PathVariable Long id,
+            @PathVariable Integer cantidad) {
+
+        try {
+            return ResponseEntity.ok(
+                    service.verificarDisponibilidad(id, cantidad)
+            );
+
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body("Producto no encontrado");
+        }
+    }
 }

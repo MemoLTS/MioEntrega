@@ -24,9 +24,31 @@ public class InvService {
     public Optional<Producto> readByid(Long id){
         return Repository.findById(id);
     }
+    public StockResponse verificarDisponibilidad(Long id, Integer cantidad) {
 
+        Producto producto = Repository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Producto no encontrado"));
+
+        return new StockResponse(
+                producto.getId(),
+                producto.getNombre(),
+                producto.getStock(),
+                producto.getStock() >= cantidad
+        );
+    }
+    public StockResponse verificarBajoStock(Long id) {
+        Producto producto = Repository.findById(id)
+                .orElseThrow(() ->
+                        new RuntimeException("Producto no encontrado"));
+        return new StockResponse(
+                producto.getId(),
+                producto.getNombre(),
+                producto.getStock(),
+                true,
+                producto.getStock() <= 10
+        );
+    }
     public StockResponse consultarStock(Long idProducto) {
-
         Producto producto = Repository.findById(idProducto)
                 .orElseThrow(() -> new RuntimeException("Producto no encontrado"));
 

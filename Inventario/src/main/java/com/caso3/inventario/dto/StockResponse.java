@@ -5,6 +5,15 @@ public class StockResponse {
     private Long idProducto;
     private String nombre;
     private Integer stock;
+    private Boolean disponible;
+    private Boolean alertaBajoStock;
+    public Boolean getAlertaBajoStock() {
+        return alertaBajoStock;
+    }
+
+    public void setAlertaBajoStock(Boolean alertaBajoStock) {
+        this.alertaBajoStock = alertaBajoStock;
+    }
 
     public StockResponse() {
     }
@@ -13,6 +22,22 @@ public class StockResponse {
         this.idProducto = idProducto;
         this.nombre = nombre;
         this.stock = stock;
+    }
+    public StockResponse(Long idProducto, String nombre,
+                        Integer stock, Boolean disponible,
+                        Boolean alertaBajoStock) {
+        this.idProducto = idProducto;
+        this.nombre = nombre;
+        this.stock = stock;
+        this.disponible = disponible;
+        this.alertaBajoStock = alertaBajoStock;
+    }
+    public StockResponse(Long idProducto, String nombre,
+                        Integer stock, Boolean disponible) {
+        this.idProducto = idProducto;
+        this.nombre = nombre;
+        this.stock = stock;
+        this.disponible = disponible;
     }
 
     public Long getIdProducto() {
@@ -37,5 +62,13 @@ public class StockResponse {
 
     public void setStock(Integer stock) {
         this.stock = stock;
+    }
+
+    public Boolean getDisponible() {
+        return disponible;
+    }
+
+    public void setDisponible(Boolean disponible) {
+        this.disponible = disponible;
     }
 }

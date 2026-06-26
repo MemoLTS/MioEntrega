@@ -2,7 +2,7 @@ package com.pruebas.unitarias.service;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -36,7 +36,6 @@ class InvenServiceTest {
 
         @Mock
         private ProductoRepository repository;
-
         @InjectMocks
         private InvService service;
 
@@ -45,10 +44,73 @@ class InvenServiceTest {
                 MockitoAnnotations.openMocks(this);
         }
         @ExtendWith(MockitoExtension.class)
+        @Test
+        void testVerificarDisponibilidad() {
+                Producto producto = new Producto();
+                producto.setId(1L);
+                producto.setNombre("Leche");
+                producto.setStock(20);
+                when(repository.findById(1L))
+                        .thenReturn(Optional.of(producto));
+                StockResponse response =
+                        service.verificarDisponibilidad(1L, 10);
+                assertNotNull(response);
+                assertEquals(1L, response.getIdProducto());
+                assertEquals("Leche", response.getNombre());
+                assertEquals(20, response.getStock());
+                assertTrue(response.getDisponible());
+                verify(repository).findById(1L);
+        }
+        @Test
+        void testVerificarDisponibilidadSinStock() {
+                Producto producto = new Producto();
+                producto.setId(1L);
+                producto.setNombre("Leche");
+                producto.setStock(3);
+                when(repository.findById(1L))
+                        .thenReturn(Optional.of(producto));
+                StockResponse response =
+                        service.verificarDisponibilidad(1L, 10);
+                assertNotNull(response);
+                assertFalse(response.getDisponible());
+                verify(repository).findById(1L);
+        }
+
+        @Test
+        void testVerificarBajoStock() {
+                Producto producto = new Producto();
+                producto.setId(1L);
+                producto.setNombre("Leche");
+                producto.setStock(3);
+                when(repository.findById(1L))
+                        .thenReturn(Optional.of(producto));
+                StockResponse response = service.verificarBajoStock(1L);
+                assertTrue(response.getAlertaBajoStock());
+        }
+        @Test
+        void testSinAlertaBajoStock() {
+                Producto producto = new Producto();
+                producto.setId(1L);
+                producto.setNombre("Leche");
+                producto.setStock(20);
+                when(repository.findById(1L))
+                        .thenReturn(Optional.of(producto));
+                StockResponse response = service.verificarBajoStock(1L);
+                assertFalse(response.getAlertaBajoStock());
+        }
+        @Test
+        void testVerificarDisponibilidadProductoNoExiste() {
+                when(repository.findById(1L))
+                        .thenReturn(Optional.empty());
+                RuntimeException ex = assertThrows(
+                        RuntimeException.class,
+                        () -> service.verificarDisponibilidad(1L, 5));
+                assertEquals("Producto no encontrado", ex.getMessage());
+                verify(repository).findById(1L);
+        }
 
         @Test
         void testConsultarStock() {
-
                 Producto producto = new Producto();
                 producto.setId(1L);
                 producto.setNombre("Mouse");

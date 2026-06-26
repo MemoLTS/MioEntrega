@@ -22,18 +22,15 @@ import jakarta.servlet.http.HttpServletResponse;
 
 @ExtendWith(MockitoExtension.class)
 class MonitoringFilterTest {
+
         @Mock
         private LogService logService;
-
         @Mock
         private FilterChain filterChain;
-
         @Mock
         private HttpServletRequest request;
-
         @Mock
         private HttpServletResponse response;
-
         @InjectMocks
         private MonitoringFilter filter;
 

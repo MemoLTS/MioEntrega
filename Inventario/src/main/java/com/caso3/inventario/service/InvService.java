@@ -1,5 +1,6 @@
 package com.caso3.inventario.service;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -11,13 +12,32 @@ import org.springframework.web.server.ResponseStatusException;
 import com.caso3.inventario.dto.StockResponse;
 import com.caso3.inventario.model.Categoria;
 import com.caso3.inventario.model.Producto;
+import com.caso3.inventario.model.ProveedorLog;
 import com.caso3.inventario.repository.ProductoRepository;
+import com.caso3.inventario.repository.ProveedorLogRepository;
 
 @Service
 public class InvService {
     @Autowired
     private ProductoRepository Repository;
 
+    @Autowired
+    private ProveedorLogRepository proveedorLogRepository;
+
+    public void ingresarStock(Long idProducto, Long idProveedor, Integer cantidad) {
+        Producto producto = Repository.findById(idProducto)
+                .orElseThrow(() -> new RuntimeException("Producto no encontrado"));
+        ProveedorLog proveedor = proveedorLogRepository.findById(idProveedor)
+                .orElseThrow(() -> new RuntimeException("Proveedor no encontrado"));
+        producto.setStock(producto.getStock() + cantidad);
+        Repository.save(producto);
+        ProveedorLog log = new ProveedorLog();
+        log.setNombreProveedor(proveedor.getNombreProveedor());
+        log.setNombreProducto(producto.getNombre());
+        log.setCantidadIngresada(cantidad);
+        log.setFecha(LocalDateTime.now());
+        proveedorLogRepository.save(log);
+    }
     public List<Producto> readAllProd() {
         return Repository.findAll();
     }

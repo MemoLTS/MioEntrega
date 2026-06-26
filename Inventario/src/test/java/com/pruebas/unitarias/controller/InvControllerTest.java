@@ -248,6 +248,15 @@ class InvControllerTest {
         }
 
         @Test
+        void testIngresarStock() throws Exception {
+                doNothing().when(service)
+                        .ingresarStock(1L, 2L, 10);
+                mockMvc.perform(post("/api/inventario/ingresar-stock/1/2/10"))
+                        .andExpect(status().isOk())
+                        .andExpect(content().string("Stock actualizado y log registrado"));
+        }
+
+        @Test
         void testVerificarBajoStock() throws Exception {
                 StockResponse response = new StockResponse();
                 response.setIdProducto(1L);
@@ -260,7 +269,8 @@ class InvControllerTest {
                         .andExpect(status().isOk())
                         .andExpect(jsonPath("$.alertaBajoStock").value(true));
                 verify(service).verificarBajoStock(1L);
-                }
+        }
+
         @Test
         void testVerificarDisponibilidadNotFound() throws Exception {
         when(service.verificarDisponibilidad(1L, 5))

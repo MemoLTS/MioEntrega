@@ -9,18 +9,18 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
+
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.server.ResponseStatusException;
@@ -28,22 +28,23 @@ import org.springframework.web.server.ResponseStatusException;
 import com.caso3.inventario.dto.StockResponse;
 import com.caso3.inventario.model.Categoria;
 import com.caso3.inventario.model.Producto;
+import com.caso3.inventario.model.ProveedorLog;
 import com.caso3.inventario.service.InvService;
 import com.caso3.inventario.repository.ProductoRepository;
+import com.caso3.inventario.repository.ProveedorLogRepository;
 
 @ExtendWith(MockitoExtension.class)
 class InvenServiceTest {
 
         @Mock
         private ProductoRepository repository;
+
+        @Mock
+        private ProveedorLogRepository proveedorLogRepository;
+
         @InjectMocks
         private InvService service;
 
-        @BeforeEach
-        void setUp() {
-                MockitoAnnotations.openMocks(this);
-        }
-        @ExtendWith(MockitoExtension.class)
         @Test
         void testVerificarDisponibilidad() {
                 Producto producto = new Producto();
@@ -107,6 +108,88 @@ class InvenServiceTest {
                         () -> service.verificarDisponibilidad(1L, 5));
                 assertEquals("Producto no encontrado", ex.getMessage());
                 verify(repository).findById(1L);
+        }
+
+        @Test
+        void testIngresarStock_ok() {
+
+        Producto producto = new Producto();
+        producto.setId(1L);
+        producto.setNombre("Mouse");
+        producto.setStock(5);
+
+        ProveedorLog proveedor = new ProveedorLog();
+        proveedor.setIdproveedor(2L);
+        proveedor.setNombreProveedor("Proveedor A");
+
+        when(repository.findById(1L))
+                .thenReturn(Optional.of(producto));
+
+        when(proveedorLogRepository.findById(2L))
+                .thenReturn(Optional.of(proveedor));
+
+        when(repository.save(any(Producto.class)))
+                .thenAnswer(i -> i.getArgument(0));
+
+        when(proveedorLogRepository.save(any(ProveedorLog.class)))
+                .thenAnswer(i -> i.getArgument(0));
+
+        service.ingresarStock(1L, 2L, 10);
+
+        assertEquals(15, producto.getStock());
+
+        verify(repository).save(producto);
+        verify(proveedorLogRepository).save(any(ProveedorLog.class));
+        }
+
+        @Test
+        void testIngresarStock_ok1() {
+                Producto producto = new Producto();
+                producto.setId(1L);
+                producto.setNombre("Mouse");
+                producto.setStock(5);
+                ProveedorLog proveedor = new ProveedorLog();
+                proveedor.setIdproveedor(2L);
+                proveedor.setNombreProveedor("Proveedor A");
+                when(repository.findById(1L))
+                        .thenReturn(Optional.of(producto));
+                when(proveedorLogRepository.findById(2L))
+                        .thenReturn(Optional.of(proveedor));
+                when(repository.save(any(Producto.class)))
+                        .thenAnswer(inv -> inv.getArgument(0));
+                when(proveedorLogRepository.save(any(ProveedorLog.class)))
+                        .thenAnswer(inv -> inv.getArgument(0));
+                service.ingresarStock(1L, 2L, 10);
+                assertEquals(15, producto.getStock());
+                verify(repository).save(producto);
+                verify(proveedorLogRepository).save(any(ProveedorLog.class));
+        }
+
+        @Test
+        void testProductoNoEncontrado() {
+                when(repository.findById(1L))
+                        .thenReturn(Optional.empty());
+                RuntimeException ex = assertThrows(RuntimeException.class,
+                        () -> service.ingresarStock(1L, 2L, 10));
+                assertEquals("Producto no encontrado", ex.getMessage());
+                verify(repository).findById(1L);
+                verifyNoInteractions(proveedorLogRepository);
+        }
+
+        @Test
+        void testProveedorNoEncontrado() {
+                Producto producto = new Producto();
+                producto.setId(1L);
+                producto.setStock(5);
+                when(repository.findById(1L))
+                        .thenReturn(Optional.of(producto));
+                when(proveedorLogRepository.findById(2L))
+                        .thenReturn(Optional.empty());
+                RuntimeException ex = assertThrows(RuntimeException.class,
+                        () -> service.ingresarStock(1L, 2L, 10));
+                assertEquals("Proveedor no encontrado", ex.getMessage());
+                verify(repository).findById(1L);
+                verify(proveedorLogRepository).findById(2L);
         }
 
         @Test

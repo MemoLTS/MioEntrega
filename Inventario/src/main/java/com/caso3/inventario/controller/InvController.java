@@ -158,4 +158,14 @@ public class InvController {
                     .body("Producto no encontrado");
         }
     }
+    @PostMapping("/ingresar-stock/{idProducto}/{idProveedor}/{cantidad}")
+    public ResponseEntity<String> ingresarStock(
+            @PathVariable Long idProducto,
+            @PathVariable Long idProveedor,
+            @PathVariable Integer cantidad) {
+
+        service.ingresarStock(idProducto, idProveedor, cantidad);
+
+        return ResponseEntity.ok("Stock actualizado y log registrado");
+    }
 }

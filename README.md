@@ -22,7 +22,7 @@ inventario
 Ejemplos :
 Delete: http://localhost:8083/api/v1/ecomarket/inventario/deleteprod/1
 Post: http://localhost:8083/api/v1/ecomarket/inventario/addprod 
-PUT en i
+PUT
 {
     "nombre": "Coca Cola 1L",
     "precio": 1990,

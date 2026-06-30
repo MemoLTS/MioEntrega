@@ -1,11 +1,15 @@
-api de Inventario y catalogo que utiliza xampp para base de datos
 Proyecto academico para clase de fullstack de caso de tienda hipotetica
 de eco market
 Desarollado por Guillermo Toledo 
- Listado de microservicios implementados.
- Rutas principales del Gateway (cuando aplique).
- Enlaces a la documentación Swagger (local o remota).
- Instrucciones básicas de ejecución local y remota
+Apis: 
+- inventario
+- catalogo
+- backup
+- monitoreo
+
+Inventario lleva a cabo la modificaciones necesarias de los datos,
+catalogo recopila esos datos y para generar listados con mas orden
+backup y monitoreo existen dentro de las apis en segun plano
 
 puertos:
 Inventario: 8080

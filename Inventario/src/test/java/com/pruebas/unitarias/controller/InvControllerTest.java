@@ -45,9 +45,11 @@ class InvControllerTest {
         private MockMvc mockMvc;
         @Autowired
         private ObjectMapper objectMapper;
+        @SuppressWarnings("removal")
         @MockBean
         private InvService service;
 
+        @SuppressWarnings("removal")
         @MockBean
         private LogService logservice;
         private Producto crearProducto() {

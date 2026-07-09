@@ -1,23 +1,24 @@
 package com.caso3.inventario.model;
 
-public enum Categoria {
-    ALIMENTOS,
-    FRUTA,
-    VERDURA,
-    HIERBAS,
-    ESPECIAS,
-    DULCES,
-    BEBIDAS,
-    LIMPIEZA,
-    CUIDADO_PERSONAL,
-    COSMETICA,
-    ALCOHOL,
-    TABACO,
-    FARMACEUTICO,
-    ROPA,
-    HOGAR,
-    JOYERIA,
-    MUEBLE,
-    ELECTRODOMESTICOS,
-    OTROS
+import jakarta.persistence.*;
+import lombok.*;
+
+
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+@Entity
+@Table(name = "categorias")
+public class Categoria {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    @Column(nullable = false, unique = true)
+    private String nombre;
+
+    @Column(nullable = false)
+    private String descripcion;
+
 }

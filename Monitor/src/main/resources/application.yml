@@ -1,0 +1,19 @@
+spring:
+  application:
+    name: monitor
+
+  datasource:
+    url: jdbc:mysql://localhost:3306/monitor
+    username: root
+    password:
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+
+server:
+  port: 8089

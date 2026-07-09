@@ -13,6 +13,7 @@ import com.caso3.inventario.dto.StockResponse;
 import com.caso3.inventario.model.Categoria;
 import com.caso3.inventario.model.Producto;
 import com.caso3.inventario.model.ProveedorLog;
+import com.caso3.inventario.repository.CategoriaRepository;
 import com.caso3.inventario.repository.ProductoRepository;
 import com.caso3.inventario.repository.ProveedorLogRepository;
 
@@ -23,6 +24,34 @@ public class InvService {
 
     @Autowired
     private ProveedorLogRepository proveedorLogRepository;
+
+    @Autowired
+    private CategoriaRepository categoriaRepository;
+
+    public Categoria crearCategoria(Categoria categoria) {
+        return categoriaRepository.save(categoria);
+    }
+
+    public List<Categoria> listarCategorias() {
+        return categoriaRepository.findAll();
+    }
+
+    public Categoria obtenerCategoriaPorId(Long id) {
+        return categoriaRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Categoría no encontrada con id: " + id));
+    }
+
+    public Categoria actualizarCategoria(Long id, Categoria datosNuevos) {
+        Categoria categoria = obtenerCategoriaPorId(id);
+        categoria.setNombre(datosNuevos.getNombre());
+        categoria.setDescripcion(datosNuevos.getDescripcion());
+        return categoriaRepository.save(categoria);
+    }
+
+    public void eliminarCategoria(Long id) {
+        Categoria categoria = obtenerCategoriaPorId(id);
+        categoriaRepository.delete(categoria);
+    }
 
     public void ingresarStock(Long idProducto, Long idProveedor, Integer cantidad) {
         Producto producto = Repository.findById(idProducto)
@@ -48,7 +77,6 @@ public class InvService {
 
         Producto producto = Repository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Producto no encontrado"));
-
         return new StockResponse(
                 producto.getId(),
                 producto.getNombre(),

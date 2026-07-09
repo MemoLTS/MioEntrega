@@ -28,10 +28,9 @@ public class Producto {
     @Min(value = 0, message = "El stock no puede ser negativo")
     @Column(nullable = false)
     private int stock;
-
-    @NotNull(message = "La categoría no puede ser nula")
-    @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
+    
+    @ManyToOne
+    @JoinColumn(name = "categoria_id", nullable = false)
     private Categoria categoria;
 }
 

@@ -1,0 +1,31 @@
+spring:
+    application:
+        name: getawayspring
+
+    cloud:
+        gateway:
+            server:
+                webflux:
+                    routes:
+                        - id: ms-inventario
+                            uri: http://localhost:8090
+                            predicates:
+                                - Path=/api/v1/inventario,/api/v1/inventario/**
+
+                            - id: ms-catalogo
+                            uri: http://localhost:8085
+                            predicates:
+                                - Path=/api/v1/catalogo,/api/v1/catalogo/**
+
+                            - id: ms-backup
+                            uri: http://localhost:8088
+                            predicates:
+                                - Path=/api/v1/backup,/api/v1/backup/**
+
+                            - id: ms-monitor
+                            uri: http://localhost:8087
+                            predicates:
+                                - Path=/api/v1/monitor,/api/v1/monitor/**
+
+server:
+    port: 8080

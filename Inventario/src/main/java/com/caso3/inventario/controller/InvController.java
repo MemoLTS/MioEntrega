@@ -34,12 +34,39 @@ public class InvController {
     @Autowired
     private LogService logservice;
 
+    @PostMapping("/categorias")
+    public ResponseEntity<Categoria> crear(@RequestBody Categoria categoria) {
+        Categoria creada = service.crearCategoria(categoria);
+        return ResponseEntity.status(HttpStatus.CREATED).body(creada);
+    }
+
+    @GetMapping("/categorias")
+    public ResponseEntity<List<Categoria>> listarCategoria() {
+        return ResponseEntity.ok(service.listarCategorias());
+    }
+
+    @GetMapping("/categorias/{id}")
+    public ResponseEntity<Categoria> obtenerCategoriaPorId(@PathVariable Long id) {
+        return ResponseEntity.ok(service.obtenerCategoriaPorId(id));
+    }
+
+    @PutMapping("/categorias/{id}")
+    public ResponseEntity<Categoria> actualizarCategoria(@PathVariable Long id, @RequestBody Categoria categoria) {
+        return ResponseEntity.ok(service.actualizarCategoria(id, categoria));
+    }
+
+    @DeleteMapping("/categorias/{id}")
+    public ResponseEntity<Void> eliminarCategoria(@PathVariable Long id) {
+        service.eliminarCategoria(id);
+        return ResponseEntity.noContent().build();
+    }
+
     @GetMapping("/logs")
-    public ResponseEntity<List<LogDTO>> listar() {
+    public ResponseEntity<List<LogDTO>> listarLogs() {
         return ResponseEntity.ok(logservice.listar());
     }
     @PostMapping("/Logs")
-    public ResponseEntity<LogDTO> guardar(@RequestBody LogDTO log) {
+    public ResponseEntity<LogDTO> guardarLogs(@RequestBody LogDTO log) {
         return ResponseEntity.ok(logservice.guardar(log));
     }
 
@@ -48,7 +75,6 @@ public class InvController {
         return service.readAllProd();
     }
 
-    // Agregar producto
     @PostMapping("/addprod")
     public ResponseEntity<?> postProducto(@Valid @RequestBody Producto producto) {
         Producto prod = service.register(producto);

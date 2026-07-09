@@ -7,15 +7,18 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
-
+import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -30,12 +33,15 @@ import com.caso3.inventario.model.Categoria;
 import com.caso3.inventario.model.Producto;
 import com.caso3.inventario.model.ProveedorLog;
 import com.caso3.inventario.service.InvService;
+import com.caso3.inventario.repository.CategoriaRepository;
 import com.caso3.inventario.repository.ProductoRepository;
 import com.caso3.inventario.repository.ProveedorLogRepository;
 
 @ExtendWith(MockitoExtension.class)
 class InvenServiceTest {
 
+        @Mock
+        private CategoriaRepository categoriaRepository;
         @Mock
         private ProductoRepository repository;
 
@@ -44,7 +50,91 @@ class InvenServiceTest {
 
         @InjectMocks
         private InvService service;
+        
+        private Categoria categoria;
 
+        @BeforeEach
+        void setUp() {
+                categoria = new Categoria(1l,"Electrónica", "Dispositivos electrónicos");
+        }
+
+        @Test
+        void crear_deberiaGuardarYRetornarCategoria() {
+                when(categoriaRepository.save(any(Categoria.class))).thenReturn(categoria);
+
+                Categoria resultado = service.crearCategoria(new Categoria(2L, "Electrónica", "Dispositivos electrónicos"));
+
+                assertNotNull(resultado);
+                assertEquals("Electrónica", resultado.getNombre());
+                verify(categoriaRepository, times(1)).save(any(Categoria.class));
+        }
+
+        @Test
+        void listarTodas_deberiaRetornarListaDeCategorias() {
+                Categoria otra = new Categoria(2L, "Hogar", "Artículos para el hogar");
+                when(categoriaRepository.findAll()).thenReturn(Arrays.asList(categoria, otra));
+
+                List<Categoria> resultado = service.listarCategorias();
+
+                assertEquals(2, resultado.size());
+                verify(categoriaRepository, times(1)).findAll();
+        }
+
+        @Test
+        void obtenerPorId_cuandoExiste_deberiaRetornarCategoria() {
+                when(categoriaRepository.findById(1L)).thenReturn(Optional.of(categoria));
+
+                Categoria resultado = service.obtenerCategoriaPorId(1L);
+
+                assertNotNull(resultado);
+                assertEquals("Electrónica", resultado.getNombre());
+        }
+
+        @Test
+        void obtenerPorId_cuandoNoExiste_deberiaLanzarExcepcion() {
+                when(categoriaRepository.findById(99L)).thenReturn(Optional.empty());
+
+                assertThrows(RuntimeException.class, () -> service.obtenerCategoriaPorId(99L));
+        }
+
+        @Test
+        void actualizar_deberiaModificarYRetornarCategoria() {
+                Categoria datosNuevos = new Categoria(3L, "Electrónica y Hogar", "Descripción actualizada");
+
+                when(categoriaRepository.findById(1L)).thenReturn(Optional.of(categoria));
+                when(categoriaRepository.save(any(Categoria.class))).thenReturn(categoria);
+
+                Categoria resultado = service.actualizarCategoria       (1L, datosNuevos);
+
+                assertEquals("Electrónica y Hogar", resultado.getNombre());
+                assertEquals("Descripción actualizada", resultado.getDescripcion());
+                verify(categoriaRepository, times(1)).save(categoria);
+        }
+
+        @Test
+        void actualizar_cuandoNoExiste_deberiaLanzarExcepcion() {
+                when(categoriaRepository.findById(99L)).thenReturn(Optional.empty());
+
+                assertThrows(RuntimeException.class,
+                        () -> service.actualizarCategoria(99L, new Categoria(3L, "X", "Y")));
+        }
+
+        @Test
+        void eliminar_deberiaLlamarAlRepositorio() {
+                when(categoriaRepository.findById(1L)).thenReturn(Optional.of(categoria));
+                doNothing().when(categoriaRepository).delete(categoria);
+
+                service.eliminarCategoria(1L);
+
+                verify(categoriaRepository, times(1)).delete(categoria);
+        }
+
+        @Test
+        void eliminar_cuandoNoExiste_deberiaLanzarExcepcion() {
+                when(categoriaRepository.findById(99L)).thenReturn(Optional.empty());
+
+                assertThrows(RuntimeException.class, () -> service.eliminarCategoria(99L));
+        }
         @Test
         void testVerificarDisponibilidad() {
                 Producto producto = new Producto();
@@ -348,10 +438,11 @@ class InvenServiceTest {
         @Test
         void testRegisterStockNegativo() {
                 Producto producto = new Producto();
+                Categoria categoria = new Categoria(1L, "Electrónica", "Dispositivos electrónicos");
                 producto.setNombre("Laptop");
                 producto.setPrecio(1000.0);
                 producto.setStock(-1);
-                producto.setCategoria(Categoria.ELECTRODOMESTICOS);
+                producto.setCategoria(categoria);
 
                 IllegalArgumentException ex = assertThrows(
                         IllegalArgumentException.class,
@@ -372,8 +463,13 @@ class InvenServiceTest {
 
         @Test
         void testGuardarProducto() {
-                Producto producto = new Producto(null,"laptop", (double) 2000000, 20, Categoria.ELECTRODOMESTICOS);
-                Producto productoGuardado = new Producto(1L, "laptop", (double)2000000, 20, Categoria.ELECTRODOMESTICOS);
+                Producto producto = new Producto();
+                Categoria categoria = new Categoria(1L, "Electrónica", "Dispositivos electrónicos");
+                producto.setCategoria(categoria);
+                producto.setNombre("laptop");
+                producto.setPrecio((double) 2000000);
+                producto.setStock(20);
+                Producto productoGuardado = new Producto(1L, "laptop", (double)2000000, 20, categoria);
 
                 when(repository.save(producto)).thenReturn(productoGuardado);
 
@@ -389,11 +485,11 @@ class InvenServiceTest {
         void testUpdateStockExitoso() {
 
                 Producto producto = new Producto();
-                producto.setId(1L);
+                Categoria categoria = new Categoria(1L, "Electrónica", "Dispositivos electrónicos");
                 producto.setNombre("Laptop");
                 producto.setPrecio(1000.0);
-                producto.setStock(5);
-                producto.setCategoria(Categoria.ELECTRODOMESTICOS);
+                producto.setStock(-1);
+                producto.setCategoria(categoria);
 
                 when(repository.findById(1L))
                         .thenReturn(Optional.of(producto));
@@ -410,7 +506,9 @@ class InvenServiceTest {
         }
         @Test
         void testListarProductos() {
-                Producto producto = new Producto(1L,"laptop", (double) 2000000, 20, Categoria.ELECTRODOMESTICOS);
+                Producto producto = new Producto();
+                Categoria categoria = new Categoria(1L, "Electrónica", "Dispositivos electrónicos");
+                producto.setCategoria(categoria);
                 List<Producto> productos = new ArrayList<>();
                 productos.add(producto);
 
@@ -425,13 +523,12 @@ class InvenServiceTest {
         }
         @Test
         void testRegisterExitoso() {
-
                 Producto producto = new Producto();
+                Categoria categoria = new Categoria(1L, "Electrónica", "Dispositivos electrónicos");
                 producto.setNombre("Laptop");
                 producto.setPrecio(1000.0);
                 producto.setStock(10);
-                producto.setCategoria(Categoria.ELECTRODOMESTICOS);
-
+                producto.setCategoria(categoria);
                 when(repository.save(any(Producto.class)))
                         .thenReturn(producto);
 
@@ -445,39 +542,36 @@ class InvenServiceTest {
 
         @Test
         void testListarProductosPorCategoria() {
-                Producto producto = new Producto(
-                        1L,
-                        "laptop",
-                        2000000.0,
-                        20,
-                        Categoria.ELECTRODOMESTICOS
-                );
+                Producto producto = new Producto();
+                Categoria categoria = new Categoria(1L, "Electrónica", "Dispositivos electrónicos");
+                producto.setNombre("Laptop");
+                producto.setPrecio(1000.0);
+                producto.setStock(-1);
+                producto.setCategoria(categoria);
 
                 List<Producto> productos = new ArrayList<>();
                 productos.add(producto);
 
-                when(repository.findByCategoria(Categoria.ELECTRODOMESTICOS))
+                when(repository.findByCategoria(categoria))
                         .thenReturn(productos);
 
                 List<Producto> resultado =
-                        service.buscarPorCategoria(Categoria.ELECTRODOMESTICOS);
+                        service.buscarPorCategoria(categoria);
 
                 assertThat(resultado).hasSize(1);
                 assertThat(resultado).contains(producto);
 
-                verify(repository).findByCategoria(Categoria.ELECTRODOMESTICOS);
+                verify(repository).findByCategoria(categoria);
                 }
 
         @Test
         void testUpdateStock() {
-
-                Producto producto = new Producto(
-                        1L,
-                        "laptop",
-                        2000000.0,
-                        20,
-                        Categoria.ELECTRODOMESTICOS
-                );
+                Producto producto = new Producto();
+                Categoria categoria = new Categoria(1L, "Electrónica", "Dispositivos electrónicos");
+                producto.setNombre("Laptop");
+                producto.setPrecio(1000.0);
+                producto.setStock(-1);
+                producto.setCategoria(categoria);
 
                 when(repository.findById(1L))
                         .thenReturn(Optional.of(producto));
@@ -495,14 +589,12 @@ class InvenServiceTest {
         }
         @Test
         void testProdUpdateStock() {
-
-                Producto producto = new Producto(
-                        1L,
-                        "laptop",
-                        2000000.0,
-                        20,
-                        Categoria.ELECTRODOMESTICOS
-                );
+                Producto producto = new Producto();
+                Categoria categoria = new Categoria(1L, "Electrónica", "Dispositivos electrónicos");
+                producto.setNombre("Laptop");
+                producto.setPrecio(1000.0);
+                producto.setStock(-1);
+                producto.setCategoria(categoria);
 
                 when(repository.findById(1L))
                         .thenReturn(Optional.of(producto));
@@ -520,8 +612,9 @@ class InvenServiceTest {
 
         @Test
         void testActualizarProducto() {
-                Producto productoExistente = new Producto(1L,"laptop", (double) 2000000, 20, Categoria.ELECTRODOMESTICOS);
-                Producto productoActualizado = new Producto(1L,"laptop", (double) 2000000, 20, Categoria.ELECTRODOMESTICOS);
+                Categoria categoria = new Categoria(1L, "Electrónica", "Dispositivos electrónicos");
+                Producto productoExistente = new Producto(1L,"laptop", (double) 2000000, 20, categoria);
+                Producto productoActualizado = new Producto(1L,"laptop", (double) 2000000, 20, categoria);
 
                 when(repository.findById(1L)).thenReturn(Optional.of(productoExistente));
                 when(repository.save(any(Producto.class))).thenAnswer(invocacion -> invocacion.getArgument(0));
@@ -529,7 +622,7 @@ class InvenServiceTest {
                 Producto resultado = service.updateProducto(1L, productoActualizado);
 
                 assertThat(resultado.getNombre()).isEqualTo("laptop");
-                assertThat(resultado.getCategoria()).isEqualTo(Categoria.ELECTRODOMESTICOS);
+                assertThat(resultado.getCategoria()).isEqualTo(categoria);
                 assertThat(resultado.getPrecio()).isEqualTo(2000000.0);
 
                 verify(repository).findById(1L);
@@ -597,28 +690,31 @@ class InvenServiceTest {
 
         @Test
         void testObtenerPorCategoria() {
+                Categoria electronica = new Categoria(1L, "Electrónica", "Dispositivos electrónicos");
+                Categoria hogar = new Categoria(2L, "Hogar", "Artículos para el hogar");
 
-                Producto p1 = new Producto(
-                        1L,
-                        "Laptop",
-                        2000000.0,
-                        20,
-                        Categoria.ELECTRODOMESTICOS
-                );
+                Producto p1 = new Producto();
+                p1.setNombre("Laptop");
+                p1.setPrecio(1000.0);
+                p1.setStock(10);
+                p1.setCategoria(electronica);
 
                 Producto p2 = new Producto(
                         2L,
                         "Mesa",
                         50000.0,
                         10,
-                        Categoria.HOGAR
+                        hogar
                 );
 
                 when(repository.findAll())
                         .thenReturn(List.of(p1, p2));
 
+                // obtenerPorCategoria compara contra categoria.toString(), no contra el nombre.
+                // Usamos el toString() real de la categoría "hogar" para no depender de
+                // cómo esté implementado (con o sin Lombok @ToString/@Data).
                 List<Producto> resultado =
-                        service.obtenerPorCategoria("HOGAR");
+                        service.obtenerPorCategoria(hogar.toString());
 
                 assertEquals(1, resultado.size());
                 assertEquals("Mesa", resultado.get(0).getNombre());
@@ -628,13 +724,13 @@ class InvenServiceTest {
 
         @Test
         void testObtenerPorCategoriaSinResultados() {
-
+                Categoria categoria = new Categoria(1L, "Electrónica", "Dispositivos electrónicos");
                 Producto p1 = new Producto(
                         1L,
                         "Mesa",
                         50000.0,
                         10,
-                        Categoria.HOGAR
+                        categoria
                 );
 
                 when(repository.findAll())
@@ -649,7 +745,6 @@ class InvenServiceTest {
         }
         @Test
         void testObtenerPorCategoriaCategoriaNull() {
-
                 Producto producto = new Producto();
                 producto.setId(1L);
                 producto.setNombre("Laptop");
@@ -669,24 +764,24 @@ class InvenServiceTest {
         }
         @Test
         void testBuscarPorCategoria() {
-
+                Categoria categoria = new Categoria(1L, "Electrónica", "Dispositivos electrónicos");
                 Producto producto = new Producto(
                         1L,
                         "Laptop",
                         2000000.0,
                         20,
-                        Categoria.ELECTRODOMESTICOS
+                        categoria
                 );
 
-                when(repository.findByCategoria(Categoria.ELECTRODOMESTICOS))
+                when(repository.findByCategoria(categoria))
                         .thenReturn(List.of(producto));
 
                 List<Producto> resultado =
-                        service.buscarPorCategoria(Categoria.ELECTRODOMESTICOS);
+                        service.buscarPorCategoria(categoria);
 
                 assertEquals(1, resultado.size());
 
                 verify(repository)
-                        .findByCategoria(Categoria.ELECTRODOMESTICOS);
+                        .findByCategoria(categoria);
         }
 }

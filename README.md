@@ -32,7 +32,7 @@ PUT
 http://localhost:8085/catalogo/PorNombre/pepsi 
 Swagger:
 http://localhost:8085/swagger-ui/index.html#/
-http://localhost:8080/swagger-ui/index.html#/
+http://localhost:8090/swagger-ui/index.html#/
 
 Se utilizo postman para las pruebas y utlizacion del proyecto
 Se necesita la carpeta de xampp en raiz, donde se generara un backup 

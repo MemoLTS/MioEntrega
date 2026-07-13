@@ -67,14 +67,16 @@ public class InvService {
         log.setFecha(LocalDateTime.now());
         proveedorLogRepository.save(log);
     }
+
     public List<Producto> readAllProd() {
         return Repository.findAll();
     }
+
     public Optional<Producto> readByid(Long id){
         return Repository.findById(id);
     }
-    public StockResponse verificarDisponibilidad(Long id, Integer cantidad) {
 
+    public StockResponse verificarDisponibilidad(Long id, Integer cantidad) {
         Producto producto = Repository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Producto no encontrado"));
         return new StockResponse(
@@ -84,6 +86,7 @@ public class InvService {
                 producto.getStock() >= cantidad
         );
     }
+
     public StockResponse verificarBajoStock(Long id) {
         Producto producto = Repository.findById(id)
                 .orElseThrow(() ->
@@ -96,6 +99,7 @@ public class InvService {
                 producto.getStock() <= 10
         );
     }
+
     public StockResponse consultarStock(Long idProducto) {
         Producto producto = Repository.findById(idProducto)
                 .orElseThrow(() -> new RuntimeException("Producto no encontrado"));
@@ -105,7 +109,7 @@ public class InvService {
                 producto.getNombre(),
                 producto.getStock());
     }
-    
+
     public Producto updateProducto(Long id, Producto datosNuevos) {
         Producto existente = Repository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Producto no encontrado"));
@@ -171,5 +175,50 @@ public class InvService {
 
     public List<Producto> buscarPorCategoria(Categoria categoria) {
         return Repository.findByCategoria(categoria);
+    }
+
+    public Producto deshabilitarProducto(Long id) {
+        Producto producto = Repository.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Producto no encontrado"));
+        producto.setActivo(false);
+        return Repository.save(producto);
+    }
+
+    public Producto habilitarProducto(Long id) {
+        Producto producto = Repository.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Producto no encontrado"));
+        producto.setActivo(true);
+        return Repository.save(producto);
+    }
+
+    public Producto aplicarDescuentoPorId(Long id, double porcentaje) {
+        if (porcentaje < 0 || porcentaje > 100) {
+            throw new IllegalArgumentException("El descuento debe estar entre 0 y 100");
+        }
+        Producto producto = Repository.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Producto no encontrado"));
+        producto.setDescuentoPorcentaje(porcentaje);
+        return Repository.save(producto);
+    }
+
+    public List<Producto> aplicarDescuentoPorCategoria(Long idCategoria, double porcentaje) {
+        if (porcentaje < 0 || porcentaje > 100) {
+            throw new IllegalArgumentException("El descuento debe estar entre 0 y 100");
+        }
+        Categoria categoria = obtenerCategoriaPorId(idCategoria);
+        List<Producto> productos = Repository.findByCategoria(categoria);
+        if (productos.isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND,
+                    "No hay productos para la categoría con id: " + idCategoria);
+        }
+        productos.forEach(p -> p.setDescuentoPorcentaje(porcentaje));
+        return Repository.saveAll(productos);
+    }
+
+    public Producto quitarDescuento(Long id) {
+        Producto producto = Repository.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Producto no encontrado"));
+        producto.setDescuentoPorcentaje(0.0);
+        return Repository.save(producto);
     }
 }

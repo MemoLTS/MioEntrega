@@ -16,17 +16,22 @@ public class CatalogController {
     @Autowired
     private CatalogService service;
 
-    @GetMapping("/PorCategoria/{categoria}")
+    @GetMapping("/PorCategoria/{idCategoria}")
     public ResponseEntity<List<ProductoDTO>> porCategoria(
-            @PathVariable String categoria){
+            @PathVariable Long idCategoria){
 
         return ResponseEntity.ok(
-                service.obtenerPorCategoria(categoria));
+                service.obtenerPorCategoria(idCategoria));
     }
 
     @GetMapping("/ver")
     public List<ProductoDTO> verCatalogo() {
         return service.verCatalogo();
+    }
+
+    @GetMapping("/ver/disponibles")
+    public List<ProductoDTO> verCatalogoDisponible() {
+        return service.verCatalogoDisponible();
     }
 
     @GetMapping("/PorNombre/{nombre}")

@@ -784,4 +784,152 @@ class InvenServiceTest {
                 verify(repository)
                         .findByCategoria(categoria);
         }
+
+        // ---------- Deshabilitar / habilitar producto ----------
+
+        @Test
+        void testDeshabilitarProductoOk() {
+                Producto producto = new Producto(1L, "Laptop", 2000000.0, 20, categoria);
+                producto.setActivo(true);
+
+                when(repository.findById(1L)).thenReturn(Optional.of(producto));
+                when(repository.save(any(Producto.class))).thenAnswer(inv -> inv.getArgument(0));
+
+                Producto resultado = service.deshabilitarProducto(1L);
+
+                assertFalse(resultado.isActivo());
+                verify(repository).save(producto);
+        }
+
+        @Test
+        void testDeshabilitarProductoNoEncontrado() {
+                when(repository.findById(1L)).thenReturn(Optional.empty());
+
+                ResponseStatusException ex = assertThrows(
+                        ResponseStatusException.class,
+                        () -> service.deshabilitarProducto(1L));
+
+                assertEquals(HttpStatus.NOT_FOUND, ex.getStatusCode());
+        }
+
+        @Test
+        void testHabilitarProductoOk() {
+                Producto producto = new Producto(1L, "Laptop", 2000000.0, 20, categoria, false, 0.0);
+
+                when(repository.findById(1L)).thenReturn(Optional.of(producto));
+                when(repository.save(any(Producto.class))).thenAnswer(inv -> inv.getArgument(0));
+
+                Producto resultado = service.habilitarProducto(1L);
+
+                assertTrue(resultado.isActivo());
+                verify(repository).save(producto);
+        }
+
+        @Test
+        void testHabilitarProductoNoEncontrado() {
+                when(repository.findById(1L)).thenReturn(Optional.empty());
+
+                assertThrows(
+                        ResponseStatusException.class,
+                        () -> service.habilitarProducto(1L));
+        }
+
+        // ---------- Descuento por id ----------
+
+        @Test
+        void testAplicarDescuentoPorIdOk() {
+                Producto producto = new Producto(1L, "Laptop", 1000.0, 20, categoria);
+
+                when(repository.findById(1L)).thenReturn(Optional.of(producto));
+                when(repository.save(any(Producto.class))).thenAnswer(inv -> inv.getArgument(0));
+
+                Producto resultado = service.aplicarDescuentoPorId(1L, 10.0);
+
+                assertEquals(10.0, resultado.getDescuentoPorcentaje());
+                assertEquals(900.0, resultado.getPrecioFinal());
+                verify(repository).save(producto);
+        }
+
+        @Test
+        void testAplicarDescuentoPorIdPorcentajeInvalidoNegativo() {
+                assertThrows(
+                        IllegalArgumentException.class,
+                        () -> service.aplicarDescuentoPorId(1L, -5.0));
+        }
+
+        @Test
+        void testAplicarDescuentoPorIdPorcentajeInvalidoMayor100() {
+                assertThrows(
+                        IllegalArgumentException.class,
+                        () -> service.aplicarDescuentoPorId(1L, 150.0));
+        }
+
+        @Test
+        void testAplicarDescuentoPorIdProductoNoEncontrado() {
+                when(repository.findById(1L)).thenReturn(Optional.empty());
+
+                assertThrows(
+                        ResponseStatusException.class,
+                        () -> service.aplicarDescuentoPorId(1L, 10.0));
+        }
+
+        @Test
+        void testQuitarDescuentoOk() {
+                Producto producto = new Producto(1L, "Laptop", 1000.0, 20, categoria, true, 15.0);
+
+                when(repository.findById(1L)).thenReturn(Optional.of(producto));
+                when(repository.save(any(Producto.class))).thenAnswer(inv -> inv.getArgument(0));
+
+                Producto resultado = service.quitarDescuento(1L);
+
+                assertEquals(0.0, resultado.getDescuentoPorcentaje());
+                assertEquals(1000.0, resultado.getPrecioFinal());
+        }
+
+        // ---------- Descuento por categoría ----------
+
+        @Test
+        void testAplicarDescuentoPorCategoriaOk() {
+                Producto p1 = new Producto(1L, "Laptop", 1000.0, 20, categoria);
+                Producto p2 = new Producto(2L, "Mouse", 20.0, 20, categoria);
+                List<Producto> productos = new ArrayList<>(List.of(p1, p2));
+
+                when(categoriaRepository.findById(1L)).thenReturn(Optional.of(categoria));
+                when(repository.findByCategoria(categoria)).thenReturn(productos);
+                when(repository.saveAll(productos)).thenReturn(productos);
+
+                List<Producto> resultado = service.aplicarDescuentoPorCategoria(1L, 20.0);
+
+                assertEquals(2, resultado.size());
+                assertTrue(resultado.stream().allMatch(p -> p.getDescuentoPorcentaje() == 20.0));
+                verify(repository).saveAll(productos);
+        }
+
+        @Test
+        void testAplicarDescuentoPorCategoriaSinProductos() {
+                when(categoriaRepository.findById(1L)).thenReturn(Optional.of(categoria));
+                when(repository.findByCategoria(categoria)).thenReturn(List.of());
+
+                ResponseStatusException ex = assertThrows(
+                        ResponseStatusException.class,
+                        () -> service.aplicarDescuentoPorCategoria(1L, 20.0));
+
+                assertEquals(HttpStatus.NOT_FOUND, ex.getStatusCode());
+        }
+
+        @Test
+        void testAplicarDescuentoPorCategoriaCategoriaNoEncontrada() {
+                when(categoriaRepository.findById(1L)).thenReturn(Optional.empty());
+
+                assertThrows(
+                        RuntimeException.class,
+                        () -> service.aplicarDescuentoPorCategoria(1L, 20.0));
+        }
+
+        @Test
+        void testAplicarDescuentoPorCategoriaPorcentajeInvalido() {
+                assertThrows(
+                        IllegalArgumentException.class,
+                        () -> service.aplicarDescuentoPorCategoria(1L, -1.0));
+        }
 }

@@ -2,12 +2,13 @@ package com.caso3.catalogo.dto;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.JoinColumn;
 import jakarta.persistence.Table;
+import jakarta.persistence.Transient;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -42,7 +43,21 @@ public class ProductoDTO {
     private int stock;
 
     @NotNull(message = "La categoría no puede ser nula")
-    @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
+    @ManyToOne
+    @JoinColumn(name = "categoria_id")
     private CategoriaDTO categoria;
+
+    @Column(nullable = false)
+    private boolean activo = true;
+
+    @Column(nullable = false)
+    private double descuentoPorcentaje = 0.0;
+
+    @Transient
+    public Double getPrecioFinal() {
+        if (precio == null) {
+            return null;
+        }
+        return precio - (precio * (descuentoPorcentaje / 100.0));
+    }
 }

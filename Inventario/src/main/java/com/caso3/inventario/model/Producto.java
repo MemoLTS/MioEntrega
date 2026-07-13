@@ -6,7 +6,6 @@ import jakarta.validation.constraints.*;
 
 @Data
 @NoArgsConstructor
-@AllArgsConstructor
 @Entity
 @Table(name = "productos")
 public class Producto {
@@ -32,5 +31,43 @@ public class Producto {
     @ManyToOne
     @JoinColumn(name = "categoria_id", nullable = false)
     private Categoria categoria;
+
+    @Column(nullable = false)
+    private boolean activo = true;
+
+    @Min(value = 0, message = "El descuento no puede ser negativo")
+    @Max(value = 100, message = "El descuento no puede ser mayor a 100")
+    @Column(nullable = false)
+    private double descuentoPorcentaje = 0.0;
+
+    public Producto(Long id, String nombre, Double precio, int stock, Categoria categoria) {
+        this.id = id;
+        this.nombre = nombre;
+        this.precio = precio;
+        this.stock = stock;
+        this.categoria = categoria;
+    }
+
+    public Producto(Long id, String nombre, Double precio, int stock, Categoria categoria, boolean activo, double descuentoPorcentaje) {
+        this.id = id;
+        this.nombre = nombre;
+        this.precio = precio;
+        this.stock = stock;
+        this.categoria = categoria;
+        this.activo = activo;
+        this.descuentoPorcentaje = descuentoPorcentaje;
+    }
+
+    /**
+     * Precio final aplicando el descuento vigente. No se persiste como columna
+     * independiente: se calcula a partir de precio y descuentoPorcentaje.
+     */
+    @Transient
+    public Double getPrecioFinal() {
+        if (precio == null) {
+            return null;
+        }
+        return precio - (precio * (descuentoPorcentaje / 100.0));
+    }
 }
 

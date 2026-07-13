@@ -32,6 +32,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -276,22 +277,27 @@ class InvControllerTest {
 
         @Test
         void testGetProductosPorCategoria() throws Exception {
-                // El endpoint recibe @PathVariable Categoria categoria sin un
-                // Converter<String, Categoria> registrado. Al no haber un
-                // @ControllerAdvice que capture el fallo de conversión, Spring
-                // deja subir la excepción como error no controlado.
-                // Comportamiento real verificado: 500 Internal Server Error.
+                // Corregido: el endpoint ahora recibe el id de la categoría (Long)
+                // en vez de intentar bindear un objeto Categoria desde el path,
+                // que fallaba porque no había Converter<String, Categoria> registrado.
+                Categoria categoria = new Categoria(1L, "Electrónica", "Dispositivos electrónicos");
+                when(service.obtenerCategoriaPorId(1L)).thenReturn(categoria);
+                when(service.buscarPorCategoria(categoria)).thenReturn(List.of(crearProducto()));
+
                 mockMvc.perform(
                         get("/api/inventario/productos/buscar/categoria/1"))
-                        .andExpect(status().isInternalServerError());
+                        .andExpect(status().isOk());
         }
 
         @Test
         void testGetProductoOrdenadoPorCategoria() throws Exception {
-                // Mismo problema que testGetProductosPorCategoria.
+                Categoria categoria = new Categoria(1L, "Electrónica", "Dispositivos electrónicos");
+                when(service.obtenerCategoriaPorId(1L)).thenReturn(categoria);
+                when(service.buscarPorCategoria(categoria)).thenReturn(List.of(crearProducto()));
+
                 mockMvc.perform(
                         get("/api/inventario/productos/ordenados/categoria/1"))
-                        .andExpect(status().isInternalServerError());
+                        .andExpect(status().isOk());
         }
 
         @Test
@@ -394,5 +400,92 @@ class InvControllerTest {
                         .andExpect(jsonPath("$.estado").value(201));
 
                 verify(logservice, times(1)).guardar(any(LogDTO.class));
+        }
+
+        // ---------- Deshabilitar / habilitar producto ----------
+
+        @Test
+        void testDeshabilitarProductoOk() throws Exception {
+                Producto producto = crearProducto();
+                producto.setActivo(false);
+                when(service.deshabilitarProducto(2L)).thenReturn(producto);
+
+                mockMvc.perform(patch("/api/inventario/productos/2/deshabilitar"))
+                        .andExpect(status().isOk())
+                        .andExpect(jsonPath("$.activo").value(false));
+        }
+
+        @Test
+        void testDeshabilitarProductoNoEncontrado() throws Exception {
+                when(service.deshabilitarProducto(99L))
+                        .thenThrow(new RuntimeException("Producto no encontrado"));
+
+                mockMvc.perform(patch("/api/inventario/productos/99/deshabilitar"))
+                        .andExpect(status().isNotFound());
+        }
+
+        @Test
+        void testHabilitarProductoOk() throws Exception {
+                Producto producto = crearProducto();
+                producto.setActivo(true);
+                when(service.habilitarProducto(2L)).thenReturn(producto);
+
+                mockMvc.perform(patch("/api/inventario/productos/2/habilitar"))
+                        .andExpect(status().isOk())
+                        .andExpect(jsonPath("$.activo").value(true));
+        }
+
+        // ---------- Descuentos ----------
+
+        @Test
+        void testAplicarDescuentoPorIdOk() throws Exception {
+                Producto producto = crearProducto();
+                producto.setDescuentoPorcentaje(15.0);
+                when(service.aplicarDescuentoPorId(2L, 15.0)).thenReturn(producto);
+
+                mockMvc.perform(patch("/api/inventario/productos/2/descuento/15.0"))
+                        .andExpect(status().isOk())
+                        .andExpect(jsonPath("$.descuentoPorcentaje").value(15.0));
+        }
+
+        @Test
+        void testAplicarDescuentoPorIdInvalido() throws Exception {
+                when(service.aplicarDescuentoPorId(2L, 150.0))
+                        .thenThrow(new IllegalArgumentException("El descuento debe estar entre 0 y 100"));
+
+                mockMvc.perform(patch("/api/inventario/productos/2/descuento/150.0"))
+                        .andExpect(status().isBadRequest());
+        }
+
+        @Test
+        void testQuitarDescuentoOk() throws Exception {
+                Producto producto = crearProducto();
+                producto.setDescuentoPorcentaje(0.0);
+                when(service.quitarDescuento(2L)).thenReturn(producto);
+
+                mockMvc.perform(delete("/api/inventario/productos/2/descuento"))
+                        .andExpect(status().isOk())
+                        .andExpect(jsonPath("$.descuentoPorcentaje").value(0.0));
+        }
+
+        @Test
+        void testAplicarDescuentoPorCategoriaOk() throws Exception {
+                Producto producto = crearProducto();
+                producto.setDescuentoPorcentaje(20.0);
+                when(service.aplicarDescuentoPorCategoria(1L, 20.0)).thenReturn(List.of(producto));
+
+                mockMvc.perform(patch("/api/inventario/categorias/1/descuento/20.0"))
+                        .andExpect(status().isOk())
+                        .andExpect(jsonPath("$[0].descuentoPorcentaje").value(20.0));
+        }
+
+        @Test
+        void testAplicarDescuentoPorCategoriaSinProductos() throws Exception {
+                when(service.aplicarDescuentoPorCategoria(1L, 20.0))
+                        .thenThrow(new org.springframework.web.server.ResponseStatusException(
+                                org.springframework.http.HttpStatus.NOT_FOUND, "No hay productos"));
+
+                mockMvc.perform(patch("/api/inventario/categorias/1/descuento/20.0"))
+                        .andExpect(status().isNotFound());
         }
 }

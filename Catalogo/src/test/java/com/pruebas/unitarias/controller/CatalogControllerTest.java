@@ -24,8 +24,14 @@ class CatalogControllerTest {
         }
 
         @Test
+        void testVerCatalogoDisponibles() throws Exception {
+                mockMvc.perform(get("/catalogo/ver/disponibles"))
+                        .andExpect(status().isOk());
+        }
+
+        @Test
         void testPorCategoria() throws Exception {
-                mockMvc.perform(get("/catalogo/PorCategoria/electronica"))
+                mockMvc.perform(get("/catalogo/PorCategoria/1"))
                         .andExpect(status().isOk());
         }
 

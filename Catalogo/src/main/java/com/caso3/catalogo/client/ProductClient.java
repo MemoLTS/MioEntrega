@@ -22,6 +22,6 @@ public interface ProductClient {
         @PathVariable("nombre") String nombre);
 
         
-    @GetMapping("/api/inventario/productos/ordenados/categoria/{categoria}")
-    List<ProductoDTO> obtenerPorCategoria(@PathVariable String categoria);
+    @GetMapping("/api/inventario/productos/ordenados/categoria/{idCategoria}")
+    List<ProductoDTO> obtenerPorCategoria(@PathVariable("idCategoria") Long idCategoria);
 }

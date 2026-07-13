@@ -41,10 +41,10 @@ class CatalogoControllerIT {
         @Test
         void testPorCategoria() throws Exception {
 
-                when(service.obtenerPorCategoria("Electronica"))
+                when(service.obtenerPorCategoria(1L))
                         .thenReturn(List.of(new ProductoDTO()));
 
-                mockMvc.perform(get("/catalogo/PorCategoria/Electronica")
+                mockMvc.perform(get("/catalogo/PorCategoria/1")
                         .accept(MediaType.APPLICATION_JSON))
                         .andExpect(status().isOk());
         }

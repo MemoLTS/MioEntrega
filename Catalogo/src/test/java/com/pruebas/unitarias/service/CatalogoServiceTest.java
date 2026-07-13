@@ -75,39 +75,65 @@ class CatalogoServiceTest {
         @Test
         void testObtenerPorCategoria() {
 
-                String categoria = "BEBIDAS";
+                Long idCategoria = 1L;
                 List<ProductoDTO> productos = List.of(producto);
 
-                when(productClient.obtenerPorCategoria(categoria))
+                when(productClient.obtenerPorCategoria(idCategoria))
                         .thenReturn(productos);
 
                 List<ProductoDTO> resultado =
-                        catalogService.obtenerPorCategoria(categoria);
+                        catalogService.obtenerPorCategoria(idCategoria);
 
                 assertNotNull(resultado);
                 assertEquals(1, resultado.size());
                 assertEquals(productos, resultado);
 
                 verify(productClient, times(1))
-                        .obtenerPorCategoria(categoria);
+                        .obtenerPorCategoria(idCategoria);
         }
 
         @Test
         void testObtenerPorCategoriaError() {
 
-                String categoria = "BEBIDAS";
+                Long idCategoria = 1L;
 
-                when(productClient.obtenerPorCategoria(categoria))
+                when(productClient.obtenerPorCategoria(idCategoria))
                         .thenThrow(new RuntimeException("Error categoría"));
 
                 RuntimeException ex = assertThrows(
                         RuntimeException.class,
-                        () -> catalogService.obtenerPorCategoria(categoria));
+                        () -> catalogService.obtenerPorCategoria(idCategoria));
 
                 assertEquals("Error categoría", ex.getMessage());
 
                 verify(productClient, times(1))
-                        .obtenerPorCategoria(categoria);
+                        .obtenerPorCategoria(idCategoria);
+        }
+
+        @Test
+        void testVerCatalogoDisponibleFiltraInactivos() {
+
+                ProductoDTO activo = new ProductoDTO();
+                activo.setId(1L);
+                activo.setNombre("Coca Cola");
+                activo.setActivo(true);
+
+                ProductoDTO inactivo = new ProductoDTO();
+                inactivo.setId(2L);
+                inactivo.setNombre("Producto descontinuado");
+                inactivo.setActivo(false);
+
+                when(productClient.obtenerProductos())
+                        .thenReturn(List.of(activo, inactivo));
+
+                List<ProductoDTO> resultado = catalogService.verCatalogoDisponible();
+
+                assertNotNull(resultado);
+                assertEquals(1, resultado.size());
+                assertEquals("Coca Cola", resultado.get(0).getNombre());
+
+                verify(productClient, times(1))
+                        .obtenerProductos();
         }
 
         @Test

@@ -11,6 +11,7 @@ import org.springframework.http.ResponseEntity;
 
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -86,14 +87,12 @@ public class InvController {
                 .body("Error al registrar producto");
     }
 
-
     @GetMapping("/productos/{id}")
     public Optional<Producto>getProducto(@PathVariable Long id) {
         return service.readByid(id);
     }
     
 
-    // Actualizar producto
     @PutMapping("/updateprod/{id}")
     public ResponseEntity<?> updateProducto(
             @PathVariable Long id,
@@ -136,14 +135,17 @@ public class InvController {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Producto no encontrado");
         }
     }
-    @GetMapping("/productos/buscar/categoria/{categoria}")
-    public ResponseEntity<List<Producto>> getProductosOrdenadosPorCategoria(@PathVariable Categoria categoria) {
+
+    @GetMapping("/productos/buscar/categoria/{idCategoria}")
+    public ResponseEntity<List<Producto>> getProductosOrdenadosPorCategoria(@PathVariable Long idCategoria) {
+        Categoria categoria = service.obtenerCategoriaPorId(idCategoria);
         List<Producto> productos = service.buscarPorCategoria(categoria);
         return ResponseEntity.ok(productos);
     }
 
-    @GetMapping("/productos/ordenados/categoria/{categoria}")
-    public ResponseEntity<List<Producto>> getProductoPorCategoria(@PathVariable Categoria categoria) {
+    @GetMapping("/productos/ordenados/categoria/{idCategoria}")
+    public ResponseEntity<List<Producto>> getProductoPorCategoria(@PathVariable Long idCategoria) {
+        Categoria categoria = service.obtenerCategoriaPorId(idCategoria);
         List<Producto> productos = service.buscarPorCategoria(categoria);
         return ResponseEntity.ok(productos);
     }
@@ -193,5 +195,58 @@ public class InvController {
         service.ingresarStock(idProducto, idProveedor, cantidad);
 
         return ResponseEntity.ok("Stock actualizado y log registrado");
+    }
+
+    @PatchMapping("/productos/{id}/deshabilitar")
+    public ResponseEntity<?> deshabilitarProducto(@PathVariable Long id) {
+        try {
+            return ResponseEntity.ok(service.deshabilitarProducto(id));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Producto no encontrado");
+        }
+    }
+
+    @PatchMapping("/productos/{id}/habilitar")
+    public ResponseEntity<?> habilitarProducto(@PathVariable Long id) {
+        try {
+            return ResponseEntity.ok(service.habilitarProducto(id));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Producto no encontrado");
+        }
+    }
+
+    @PatchMapping("/productos/{id}/descuento/{porcentaje}")
+    public ResponseEntity<?> aplicarDescuentoPorId(
+            @PathVariable Long id,
+            @PathVariable double porcentaje) {
+        try {
+            return ResponseEntity.ok(service.aplicarDescuentoPorId(id, porcentaje));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Producto no encontrado");
+        }
+    }
+
+    @DeleteMapping("/productos/{id}/descuento")
+    public ResponseEntity<?> quitarDescuento(@PathVariable Long id) {
+        try {
+            return ResponseEntity.ok(service.quitarDescuento(id));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Producto no encontrado");
+        }
+    }
+
+    @PatchMapping("/categorias/{idCategoria}/descuento/{porcentaje}")
+    public ResponseEntity<?> aplicarDescuentoPorCategoria(
+            @PathVariable Long idCategoria,
+            @PathVariable double porcentaje) {
+        try {
+            return ResponseEntity.ok(service.aplicarDescuentoPorCategoria(idCategoria, porcentaje));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+        }
     }
 }

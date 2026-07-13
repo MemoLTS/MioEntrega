@@ -1,0 +1,83 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    name: GatewayEcoMarket
+  cloud:
+    gateway:
+      globalcors:
+        cors-configurations:
+          '[/**]':
+            allowedOrigins: "*"
+            allowedMethods: "*"
+            allowedHeaders: "*"
+      routes:
+
+        # ─── Juan Pablo Jofre ────────────────────────────────────────────────
+        - id: usuario
+          uri: http://localhost:9090
+          predicates:
+            - Path=/api/v1/usuarios/**,/api/v1/cuentaUsuario/**,/api/v1/direccionEnvio/**,/api/v1/metodoPago/**,/api/v1/sesion/**
+
+        - id: tienda
+          uri: http://localhost:8889
+          predicates:
+            - Path=/api/v1/tienda/**
+
+        - id: soporte
+          uri: http://localhost:9004
+          predicates:
+            - Path=/api/v1/ticketSoporte/**,/api/v1/reclamo/**,/api/v1/evidencia/**,/api/v1/mensajeSoporte/**,/api/v1/personalSoporte/**,/api/v1/resolucionSoporte/**,/api/v1/solicitudDevolucion/**,/api/v1/historialTicket/**
+
+        # ─── Guillermo Toledo ────────────────────────────────────────────────
+        - id: inventario
+          uri: http://localhost:8090
+          predicates:
+            - Path=/api/v1/inventario/**
+
+        - id: catalogo
+          uri: http://localhost:8085
+          predicates:
+            - Path=/api/v1/catalogo/**
+
+        - id: backup
+          uri: http://localhost:8089
+          predicates:
+            - Path=/api/v1/backup/**
+
+        - id: monitor
+          uri: http://localhost:8087
+          predicates:
+            - Path=/api/v1/monitor/**
+
+        # ─── CristobalMerino (requieren server.port en su application.properties) ──
+        - id: proveedor
+          uri: http://localhost:9100
+          predicates:
+            - Path=/api/proveedores/**
+
+        - id: pedido
+          uri: http://localhost:9101
+          predicates:
+            - Path=/api/pedidos/**
+
+        - id: envio
+          uri: http://localhost:9102
+          predicates:
+            - Path=/api/envios/**
+
+        - id: ruta
+          uri: http://localhost:9103
+          predicates:
+            - Path=/api/rutas/**
+
+        - id: factura
+          uri: http://localhost:9104
+          predicates:
+            - Path=/api/facturas/**
+
+        - id: pago
+          uri: http://localhost:9105
+          predicates:
+            - Path=/api/pagos/**

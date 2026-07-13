@@ -9,44 +9,39 @@ import com.caso3.catalogo.dto.CategoriaDTO;
 class CategoriaDTOTest {
 
     @Test
-    void testCantidadCategorias() {
-        CategoriaDTO[] categorias = CategoriaDTO.values();
+    void testCrearCategoriaConDatos() {
+        CategoriaDTO categoria = new CategoriaDTO(1L, "ALIMENTOS", "Productos alimenticios");
 
-        assertEquals(9, categorias.length);
+        assertEquals(1L, categoria.getId());
+        assertEquals("ALIMENTOS", categoria.getNombre());
+        assertEquals("Productos alimenticios", categoria.getDescripcion());
     }
 
     @Test
-    void testValueOfAlimentos() {
-        CategoriaDTO categoria = CategoriaDTO.valueOf("ALIMENTOS");
+    void testSettersYGetters() {
+        CategoriaDTO categoria = new CategoriaDTO();
+        categoria.setId(2L);
+        categoria.setNombre("BEBIDAS");
+        categoria.setDescripcion("Bebidas en general");
 
-        assertEquals(CategoriaDTO.ALIMENTOS, categoria);
+        assertEquals(2L, categoria.getId());
+        assertEquals("BEBIDAS", categoria.getNombre());
+        assertEquals("Bebidas en general", categoria.getDescripcion());
     }
 
     @Test
-    void testValueOfDulces() {
-        CategoriaDTO categoria = CategoriaDTO.valueOf("DULCES");
+    void testEqualsEntreCategoriasIguales() {
+        CategoriaDTO categoria1 = new CategoriaDTO(3L, "DULCES", "Confitería");
+        CategoriaDTO categoria2 = new CategoriaDTO(3L, "DULCES", "Confitería");
 
-        assertEquals(CategoriaDTO.DULCES, categoria);
+        assertEquals(categoria1, categoria2);
     }
 
     @Test
-    void testTodasLasCategoriasExisten() {
-        assertNotNull(CategoriaDTO.ALIMENTOS);
-        assertNotNull(CategoriaDTO.DULCES);
-        assertNotNull(CategoriaDTO.BEBIDAS);
-        assertNotNull(CategoriaDTO.LIMPIEZA);
-        assertNotNull(CategoriaDTO.CUIDADO_PERSONAL);
-        assertNotNull(CategoriaDTO.ROPA);
-        assertNotNull(CategoriaDTO.HOGAR);
-        assertNotNull(CategoriaDTO.ELECTRODOMESTICOS);
-        assertNotNull(CategoriaDTO.OTROS);
-    }
+    void testNoEqualsEntreCategoriasDistintas() {
+        CategoriaDTO categoria1 = new CategoriaDTO(4L, "ROPA", "Vestuario");
+        CategoriaDTO categoria2 = new CategoriaDTO(5L, "HOGAR", "Artículos para el hogar");
 
-    @Test
-    void testValueOfInvalido() {
-        assertThrows(
-                IllegalArgumentException.class,
-                () -> CategoriaDTO.valueOf("CATEGORIA_INEXISTENTE")
-        );
+        assertNotEquals(categoria1, categoria2);
     }
 }

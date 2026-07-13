@@ -136,9 +136,14 @@ public class InvService {
         if (producto.getStock() < 0) {
             throw new IllegalArgumentException("El stock no puede ser negativo");
         }
-        if (producto.getCategoria() == null) {
-            throw new IllegalArgumentException("La categoría es obligatoria");
+        if (producto.getCategoria() == null ||
+        producto.getCategoria().getId() == null) {
+        throw new IllegalArgumentException("La categoría es obligatoria");
         }
+        Categoria categoria = categoriaRepository.findById(producto.getCategoria().getId())
+            .orElseThrow(() ->
+                    new RuntimeException("La categoría no existe"));
+        producto.setCategoria(categoria);
         return Repository.save(producto);
     }
 

@@ -78,7 +78,7 @@ class CatalogoServiceTest {
                 Long idCategoria = 1L;
                 List<ProductoDTO> productos = List.of(producto);
 
-                when(productClient.obtenerPorCategoria(idCategoria))
+                when(productClient.obtenerProductos())
                         .thenReturn(productos);
 
                 List<ProductoDTO> resultado =
@@ -89,7 +89,7 @@ class CatalogoServiceTest {
                 assertEquals(productos, resultado);
 
                 verify(productClient, times(1))
-                        .obtenerPorCategoria(idCategoria);
+                        .obtenerProductos();
         }
 
         @Test
@@ -97,7 +97,7 @@ class CatalogoServiceTest {
 
                 Long idCategoria = 1L;
 
-                when(productClient.obtenerPorCategoria(idCategoria))
+                when(productClient.obtenerProductos())
                         .thenThrow(new RuntimeException("Error categoría"));
 
                 RuntimeException ex = assertThrows(
@@ -107,7 +107,7 @@ class CatalogoServiceTest {
                 assertEquals("Error categoría", ex.getMessage());
 
                 verify(productClient, times(1))
-                        .obtenerPorCategoria(idCategoria);
+                        .obtenerProductos();
         }
 
         @Test
@@ -142,7 +142,7 @@ class CatalogoServiceTest {
                 String nombre = "Coca Cola";
                 List<ProductoDTO> productos = List.of(producto);
 
-                when(productClient.obtenerPorNombre(nombre))
+                when(productClient.obtenerProductos())
                         .thenReturn(productos);
 
                 List<ProductoDTO> resultado =
@@ -153,7 +153,7 @@ class CatalogoServiceTest {
                 assertEquals(productos, resultado);
 
                 verify(productClient, times(1))
-                        .obtenerPorNombre(nombre);
+                        .obtenerProductos();
         }
 
         @Test
@@ -161,7 +161,7 @@ class CatalogoServiceTest {
 
                 String nombre = "Coca Cola";
 
-                when(productClient.obtenerPorNombre(nombre))
+                when(productClient.obtenerProductos())
                         .thenThrow(new RuntimeException("Error nombre"));
 
                 RuntimeException ex = assertThrows(
@@ -171,6 +171,6 @@ class CatalogoServiceTest {
                 assertEquals("Error nombre", ex.getMessage());
 
                 verify(productClient, times(1))
-                        .obtenerPorNombre(nombre);
+                        .obtenerProductos();
         }
 }

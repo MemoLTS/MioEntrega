@@ -70,10 +70,15 @@ public class InvController {
     public ResponseEntity<LogDTO> guardarLogs(@RequestBody LogDTO log) {
         return ResponseEntity.ok(logservice.guardar(log));
     }
-
-    @GetMapping("/productos")
-    public List<Producto> getProductos() {
-        return service.readAllProd();
+    @GetMapping("/prods")
+    public ResponseEntity<?> getProds() {
+        try {
+            return ResponseEntity.ok(service.readAllProd());
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(e.getMessage());
+        }
     }
 
     @PostMapping("/addprod")

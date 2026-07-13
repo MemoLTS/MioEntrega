@@ -58,10 +58,6 @@ public class Producto {
         this.descuentoPorcentaje = descuentoPorcentaje;
     }
 
-    /**
-     * Precio final aplicando el descuento vigente. No se persiste como columna
-     * independiente: se calcula a partir de precio y descuentoPorcentaje.
-     */
     @Transient
     public Double getPrecioFinal() {
         if (precio == null) {

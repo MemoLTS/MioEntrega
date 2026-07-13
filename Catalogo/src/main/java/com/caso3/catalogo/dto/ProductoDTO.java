@@ -2,8 +2,6 @@ package com.caso3.catalogo.dto;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.JoinColumn;
@@ -24,8 +22,13 @@ import lombok.NoArgsConstructor;
 @Table(name = "productos")
 public class ProductoDTO {
 
+    /**
+     * OJO: este id NO se autogenera. Catalogo es un espejo/cache de Inventario,
+     * así que el id de cada producto debe ser exactamente el mismo id que tiene
+     * en Inventario (la fuente de verdad). Así la sincronización puede
+     * comparar y actualizar por id sin que se desincronicen los identificadores.
+     */
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @NotBlank(message = "El nombre del producto no puede estar vacío")

@@ -10,7 +10,7 @@ import com.caso3.catalogo.service.CatalogService;
 import java.util.List;
 
 @RestController
-@RequestMapping("/catalogo")
+@RequestMapping("api/v1/catalogo")
 public class CatalogController {
 
     @Autowired

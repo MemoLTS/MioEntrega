@@ -27,7 +27,7 @@ import com.caso3.inventario.service.InvService;
 import com.caso3.inventario.service.LogService;
 
 @RestController
-@RequestMapping("/api/inventario")
+@RequestMapping("/api/v1/inventario")
 public class InvController {
 
     @Autowired
@@ -66,7 +66,7 @@ public class InvController {
     public ResponseEntity<List<LogDTO>> listarLogs() {
         return ResponseEntity.ok(logservice.listar());
     }
-    @PostMapping("/Logs")
+    @PostMapping("/logs")
     public ResponseEntity<LogDTO> guardarLogs(@RequestBody LogDTO log) {
         return ResponseEntity.ok(logservice.guardar(log));
     }

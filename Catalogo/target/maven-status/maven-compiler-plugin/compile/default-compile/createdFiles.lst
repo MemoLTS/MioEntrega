@@ -1,0 +1,12 @@
+com\caso3\catalogo\controller\CatalogController.class
+com\caso3\catalogo\dto\CategoriaDTO.class
+com\caso3\catalogo\client\ProductClient.class
+com\caso3\catalogo\service\LogService.class
+com\caso3\catalogo\repository\LogRepository.class
+com\caso3\catalogo\repository\CategoriaCatalogRepository.class
+com\caso3\catalogo\service\CatalogService.class
+com\caso3\catalogo\dto\ProductoDTO.class
+com\caso3\catalogo\Catalogo.class
+com\caso3\catalogo\dto\LogDTO.class
+com\caso3\catalogo\repository\CatalogRepository.class
+com\caso3\catalogo\exception\GlobalExceptionHandler.class

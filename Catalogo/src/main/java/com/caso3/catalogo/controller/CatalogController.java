@@ -42,4 +42,12 @@ public class CatalogController {
                 service.obtenerPorNombre(nombre));
     }
 
+    @GetMapping("/PorNombreCategoria/{nombreCategoria}")
+    public ResponseEntity<List<ProductoDTO>> porNombreCategoria(
+            @PathVariable String nombreCategoria){
+
+        return ResponseEntity.ok(
+                service.obtenerPorNombreCategoria(nombreCategoria));
+    }
+
 }

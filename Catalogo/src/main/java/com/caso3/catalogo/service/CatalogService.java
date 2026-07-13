@@ -15,7 +15,16 @@ import com.caso3.catalogo.dto.ProductoDTO;
 import com.caso3.catalogo.repository.CatalogRepository;
 import com.caso3.catalogo.repository.CategoriaCatalogRepository;
 
-
+/**
+ * Catalogo mantiene una copia local (BD propia) de los productos de
+ * Inventario. Inventario es siempre la fuente de verdad: en cada request
+ * de lectura, se trae el estado actual desde Inventario y se compara
+ * contra lo guardado localmente. Si algo no coincide (precio, stock,
+ * nombre, categoría, descuento o si fue activado/desactivado), se
+ * actualiza la copia local. Los productos que ya no existen en Inventario
+ * se eliminan del catálogo local. Los productos inactivos nunca se
+ * devuelven al cliente del catálogo.
+ */
 @Service
 public class CatalogService {
 
@@ -28,12 +37,15 @@ public class CatalogService {
     @Autowired
     private CategoriaCatalogRepository categoriaCatalogRepository;
 
-    public CatalogService(ProductClient productClient, CatalogRepository catalogRepository, CategoriaCatalogRepository categoriaCatalogRepository) {
+    public CatalogService(ProductClient productClient,
+                           CatalogRepository catalogRepository,
+                           CategoriaCatalogRepository categoriaCatalogRepository) {
         this.productClient = productClient;
         this.catalogRepository = catalogRepository;
         this.categoriaCatalogRepository = categoriaCatalogRepository;
     }
 
+    /** Trae el estado real de Inventario y actualiza la copia local si hace falta. */
     private void sincronizarConInventario() {
         List<ProductoDTO> productosInventario = productClient.obtenerProductos();
 
@@ -50,6 +62,7 @@ public class CatalogService {
             }
         }
 
+        // Productos que ya no existen en Inventario: se quitan del catálogo local
         Set<Long> idsVigentes = productosInventario.stream()
                 .map(ProductoDTO::getId)
                 .collect(Collectors.toSet());
@@ -88,6 +101,7 @@ public class CatalogService {
                 && Objects.equals(idCategoriaLocal, idCategoriaRemoto);
     }
 
+    /** Catálogo completo, siempre sincronizado y sin productos inactivos. */
     public List<ProductoDTO> verCatalogo() {
         sincronizarConInventario();
         return catalogRepository.findAll()
@@ -96,7 +110,7 @@ public class CatalogService {
                 .toList();
     }
 
-
+    /** Se mantiene como alias explícito por compatibilidad con el endpoint /ver/disponibles. */
     public List<ProductoDTO> verCatalogoDisponible() {
         return verCatalogo();
     }
@@ -117,6 +131,18 @@ public class CatalogService {
                 .filter(ProductoDTO::isActivo)
                 .filter(p -> p.getNombre() != null
                         && p.getNombre().toLowerCase().contains(nombre.toLowerCase()))
+                .toList();
+    }
+
+    /** Productos activos cuya categoría coincide con el nombre indicado (ignora mayúsculas/minúsculas). */
+    public List<ProductoDTO> obtenerPorNombreCategoria(String nombreCategoria) {
+        sincronizarConInventario();
+        return catalogRepository.findAll()
+                .stream()
+                .filter(ProductoDTO::isActivo)
+                .filter(p -> p.getCategoria() != null
+                        && p.getCategoria().getNombre() != null
+                        && p.getCategoria().getNombre().equalsIgnoreCase(nombreCategoria))
                 .toList();
     }
 

@@ -471,6 +471,7 @@ class InvenServiceTest {
                 producto.setStock(20);
                 Producto productoGuardado = new Producto(1L, "laptop", (double)2000000, 20, categoria);
 
+                when(categoriaRepository.findById(1L)).thenReturn(Optional.of(categoria));
                 when(repository.save(producto)).thenReturn(productoGuardado);
 
                 Producto resultado = service.register(producto);
@@ -478,6 +479,7 @@ class InvenServiceTest {
                 assertThat(resultado.getId()).isEqualTo(1L);
                 assertThat(resultado.getNombre()).isEqualTo("laptop");
 
+                verify(categoriaRepository).findById(1L);
                 verify(repository).save(producto);
         }
         
@@ -529,6 +531,7 @@ class InvenServiceTest {
                 producto.setPrecio(1000.0);
                 producto.setStock(10);
                 producto.setCategoria(categoria);
+                when(categoriaRepository.findById(1L)).thenReturn(Optional.of(categoria));
                 when(repository.save(any(Producto.class)))
                         .thenReturn(producto);
 
@@ -537,6 +540,7 @@ class InvenServiceTest {
                 assertNotNull(resultado);
                 assertEquals(producto, resultado);
 
+                verify(categoriaRepository).findById(1L);
                 verify(repository).save(producto);
         }
 

@@ -58,7 +58,7 @@ class BackupControllerTest {
         when(backupService.listar())
                 .thenReturn(List.of(backup));
         mockMvc.perform(
-                get("/api/backups")
+                get("/api/v1/backups")
         )
         .andExpect(status().isOk());
     }
@@ -75,9 +75,11 @@ class BackupControllerTest {
         )
         .thenReturn(backup);
         mockMvc.perform(
-                post("/api/backups")
+                post("/api/v1/backups")
         )
-        .andExpect(status().isOk());
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.id").value(1))
+        .andExpect(jsonPath("$.tipo").value("MANUAL"));
     }
 
     @Test
@@ -91,9 +93,10 @@ class BackupControllerTest {
         )
         .thenReturn(backup);
         mockMvc.perform(
-                get("/api/backups/ultimo")
+                get("/api/v1/backups/ultimo")
         )
-        .andExpect(status().isOk());
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.tipo").value("INICIAL"));
     }
 
 
@@ -106,7 +109,7 @@ class BackupControllerTest {
         when(configService.activar())
                 .thenReturn(config);
 
-        mockMvc.perform(put("/api/backups/activar"))
+        mockMvc.perform(put("/api/v1/backups/activar"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.activo")
                         .value(true));
@@ -124,7 +127,7 @@ class BackupControllerTest {
         when(configService.desactivar())
                 .thenReturn(config);
 
-        mockMvc.perform(put("/api/backups/desactivar"))
+        mockMvc.perform(put("/api/v1/backups/desactivar"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.activo")
                         .value(false));
@@ -141,7 +144,7 @@ class BackupControllerTest {
         when(configService.obtener())
                 .thenReturn(config);
 
-        mockMvc.perform(get("/api/backups/config"))
+        mockMvc.perform(get("/api/v1/backups/config"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.activo")
                         .value(true));

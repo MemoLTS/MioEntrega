@@ -1,7 +1,6 @@
 package com.pruebas.unitarias.controller;
 
 import com.caso3.inventario.Inventario;
-import com.caso3.inventario.controller.InvController;
 import com.caso3.inventario.dto.LogDTO;
 import com.caso3.inventario.dto.StockResponse;
 import com.caso3.inventario.model.Categoria;
@@ -12,10 +11,12 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.ActiveProfiles;
 
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.http.MediaType;
-import org.springframework.test.context.ContextConfiguration;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -39,11 +40,11 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 
-import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 
-@WebMvcTest(InvController.class)
-@ContextConfiguration(classes = Inventario.class)
+@SpringBootTest(classes = Inventario.class)
+@AutoConfigureMockMvc
+@ActiveProfiles("test")
 class InvControllerTest {
 
         @Autowired
@@ -58,7 +59,6 @@ class InvControllerTest {
         @MockBean
         private LogService logservice;
 
-        // Producto de prueba reutilizado: id=2, nombre="Mouse", categoria "Electrónica"
         private Producto crearProducto() {
         Categoria categoria = new Categoria(1L, "Electrónica", "Dispositivos electrónicos");
         Producto producto = new Producto(2L, "Mouse", 20.0, 20, categoria);
@@ -73,7 +73,7 @@ class InvControllerTest {
 
         when(service.crearCategoria(any(Categoria.class))).thenReturn(categoria);
 
-        mockMvc.perform(post("/api/inventario/categorias")
+        mockMvc.perform(post("/api/v1/inventario/categorias")
                         .contentType("application/json")
                         .content(objectMapper.writeValueAsString(categoria)))
                 .andExpect(status().isCreated())
@@ -87,7 +87,7 @@ class InvControllerTest {
 
                 when(service.listarCategorias()).thenReturn(Arrays.asList(c1, c2));
 
-                mockMvc.perform(get("/api/inventario/categorias"))
+                mockMvc.perform(get("/api/v1/inventario/categorias"))
                         .andExpect(status().isOk())
                         .andExpect(jsonPath("$.length()").value(2));
         }
@@ -98,7 +98,7 @@ class InvControllerTest {
 
                 when(service.obtenerCategoriaPorId(1L)).thenReturn(categoria);
 
-                mockMvc.perform(get("/api/inventario/categorias/1"))
+                mockMvc.perform(get("/api/v1/inventario/categorias/1"))
                         .andExpect(status().isOk())
                         .andExpect(jsonPath("$.nombre").value("Electrónica"));
         }
@@ -109,7 +109,7 @@ class InvControllerTest {
 
                 when(service.actualizarCategoria(anyLong(), any(Categoria.class))).thenReturn(actualizada);
 
-                mockMvc.perform(put("/api/inventario/categorias/1")
+                mockMvc.perform(put("/api/v1/inventario/categorias/1")
                                 .contentType("application/json")
                                 .content(objectMapper.writeValueAsString(actualizada)))
                         .andExpect(status().isOk())
@@ -120,7 +120,7 @@ class InvControllerTest {
         void eliminar_deberiaRetornar204() throws Exception {
                 doNothing().when(service).eliminarCategoria(1L);
 
-                mockMvc.perform(delete("/api/inventario/categorias/1"))
+                mockMvc.perform(delete("/api/v1/inventario/categorias/1"))
                         .andExpect(status().isNoContent());
 
                 verify(service, times(1)).eliminarCategoria(1L);
@@ -132,7 +132,7 @@ class InvControllerTest {
         void testListarLogs() throws Exception {
         List<LogDTO> logs = new ArrayList<>();
         when(logservice.listar()).thenReturn(logs);
-        mockMvc.perform(get("/api/inventario/logs"))
+        mockMvc.perform(get("/api/v1/inventario/logs"))
                 .andExpect(status().isOk());
         verify(logservice).listar();
         }
@@ -148,7 +148,7 @@ class InvControllerTest {
                 );
                 when(service.consultarStock(1L))
                         .thenReturn(response);
-                mockMvc.perform(get("/api/inventario/stock/1"))
+                mockMvc.perform(get("/api/v1/inventario/stock/1"))
                         .andExpect(status().isOk())
                         .andExpect(jsonPath("$.idProducto").value(1))
                         .andExpect(jsonPath("$.nombre").value("Mouse"))
@@ -163,7 +163,7 @@ class InvControllerTest {
                 Producto producto = crearProducto();
                 when(service.readAllProd())
                         .thenReturn(List.of(producto));
-                mockMvc.perform(get("/api/inventario/productos"))
+                mockMvc.perform(get("/api/v1/inventario/prods"))
                         .andExpect(status().isOk())
                         .andExpect(jsonPath("$[0].id").value(2))
                         .andExpect(jsonPath("$[0].nombre").value("Mouse"));
@@ -174,7 +174,7 @@ class InvControllerTest {
                 Producto producto = crearProducto();
                 when(service.register(any(Producto.class)))
                         .thenReturn(producto);
-                mockMvc.perform(post("/api/inventario/addprod")
+                mockMvc.perform(post("/api/v1/inventario/addprod")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(producto)))
                         .andExpect(status().isCreated())
@@ -186,7 +186,7 @@ class InvControllerTest {
                 Producto producto = crearProducto();
                 when(service.register(any(Producto.class)))
                         .thenReturn(null);
-                mockMvc.perform(post("/api/inventario/addprod")
+                mockMvc.perform(post("/api/v1/inventario/addprod")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(producto)))
                         .andExpect(status().isBadRequest())
@@ -198,7 +198,7 @@ class InvControllerTest {
                 Producto producto = crearProducto();
                 when(service.readByid(1L))
                         .thenReturn(Optional.of(producto));
-                mockMvc.perform(get("/api/inventario/productos/1"))
+                mockMvc.perform(get("/api/v1/inventario/productos/1"))
                         .andExpect(status().isOk())
                         .andExpect(jsonPath("$.nombre").value("Mouse"));
         }
@@ -217,7 +217,7 @@ class InvControllerTest {
                         .thenReturn(List.of(existente));
                 when(service.register(any(Producto.class)))
                         .thenReturn(actualizado);
-                mockMvc.perform(put("/api/inventario/updateprod/2")
+                mockMvc.perform(put("/api/v1/inventario/updateprod/2")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(actualizado)))
                         .andExpect(status().isOk())
@@ -229,7 +229,7 @@ class InvControllerTest {
                 Producto producto = crearProducto();
                 when(service.readAllProd())
                         .thenReturn(List.of());
-                mockMvc.perform(put("/api/inventario/updateprod/1")
+                mockMvc.perform(put("/api/v1/inventario/updateprod/1")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(producto)))
                         .andExpect(status().isNotFound())
@@ -243,7 +243,7 @@ class InvControllerTest {
                 producto.setStock(50);
                 when(service.updateStock(1L, 50))
                         .thenReturn(producto);
-                mockMvc.perform(put("/api/inventario/updateprod/1/50"))
+                mockMvc.perform(put("/api/v1/inventario/updateprod/1/50"))
                         .andExpect(status().isOk());
         }
 
@@ -252,7 +252,7 @@ class InvControllerTest {
                 doThrow(new RuntimeException())
                         .when(service)
                         .updateStock(1L, 50);
-                mockMvc.perform(put("/api/inventario/updateprod/1/50"))
+                mockMvc.perform(put("/api/v1/inventario/updateprod/1/50"))
                         .andExpect(status().isNotFound())
                         .andExpect(content().string("Producto no encontrado"));
         }
@@ -260,7 +260,7 @@ class InvControllerTest {
         @Test
         void testDeleteProductoOk() throws Exception {
                 doNothing().when(service).deleteById(1L);
-                mockMvc.perform(delete("/api/inventario/deleteprod/1"))
+                mockMvc.perform(delete("/api/v1/inventario/deleteprod/1"))
                         .andExpect(status().isOk())
                         .andExpect(content().string("Producto eliminado"));
         }
@@ -270,7 +270,7 @@ class InvControllerTest {
                 doThrow(new RuntimeException())
                         .when(service)
                         .deleteById(1L);
-                mockMvc.perform(delete("/api/inventario/deleteprod/1"))
+                mockMvc.perform(delete("/api/v1/inventario/deleteprod/1"))
                         .andExpect(status().isNotFound())
                         .andExpect(content().string("Producto no encontrado"));
         }
@@ -285,8 +285,10 @@ class InvControllerTest {
                 when(service.buscarPorCategoria(categoria)).thenReturn(List.of(crearProducto()));
 
                 mockMvc.perform(
-                        get("/api/inventario/productos/buscar/categoria/1"))
-                        .andExpect(status().isOk());
+                        get("/api/v1/inventario/productos/buscar/categoria/1"))
+                        .andExpect(status().isOk())
+                        .andExpect(jsonPath("$[0].nombre").value("Mouse"))
+                        .andExpect(jsonPath("$[0].categoria.nombre").value("Electrónica"));
         }
 
         @Test
@@ -296,8 +298,10 @@ class InvControllerTest {
                 when(service.buscarPorCategoria(categoria)).thenReturn(List.of(crearProducto()));
 
                 mockMvc.perform(
-                        get("/api/inventario/productos/ordenados/categoria/1"))
-                        .andExpect(status().isOk());
+                        get("/api/v1/inventario/productos/ordenados/categoria/1"))
+                        .andExpect(status().isOk())
+                        .andExpect(jsonPath("$[0].id").value(2))
+                        .andExpect(jsonPath("$[0].categoria.descripcion").value("Dispositivos electrónicos"));
         }
 
         @Test
@@ -306,7 +310,7 @@ class InvControllerTest {
                 when(service.readAllProd())
                         .thenReturn(List.of(producto));
                 mockMvc.perform(
-                        get("/api/inventario/productos/nombre/Mou"))
+                        get("/api/v1/inventario/productos/nombre/Mou"))
                         .andExpect(status().isOk())
                         .andExpect(jsonPath("$[0].nombre").value("Mouse"));
         }
@@ -318,7 +322,7 @@ class InvControllerTest {
                 when(service.verificarDisponibilidad(1L, 5))
                         .thenReturn(response);
                 mockMvc.perform(
-                        get("/api/inventario/disponibilidad/1/5"))
+                        get("/api/v1/inventario/disponibilidad/1/5"))
                         .andExpect(status().isOk())
                         .andExpect(jsonPath("$.idProducto").value(1))
                         .andExpect(jsonPath("$.nombre").value("Leche"))
@@ -331,7 +335,7 @@ class InvControllerTest {
         void testIngresarStock() throws Exception {
                 doNothing().when(service)
                         .ingresarStock(1L, 2L, 10);
-                mockMvc.perform(post("/api/inventario/ingresar-stock/1/2/10"))
+                mockMvc.perform(post("/api/v1/inventario/ingresar-stock/1/2/10"))
                         .andExpect(status().isOk())
                         .andExpect(content().string("Stock actualizado y log registrado"));
         }
@@ -345,17 +349,27 @@ class InvControllerTest {
                 response.setAlertaBajoStock(true);
                 when(service.verificarBajoStock(1L))
                         .thenReturn(response);
-                mockMvc.perform(get("/api/inventario/alerta/1"))
+                mockMvc.perform(get("/api/v1/inventario/alerta/1"))
                         .andExpect(status().isOk())
                         .andExpect(jsonPath("$.alertaBajoStock").value(true));
                 verify(service).verificarBajoStock(1L);
         }
 
         @Test
+        void testVerificarBajoStockNotFound() throws Exception {
+                when(service.verificarBajoStock(1L))
+                        .thenThrow(new RuntimeException("Producto no encontrado"));
+
+                mockMvc.perform(get("/api/v1/inventario/alerta/1"))
+                        .andExpect(status().isNotFound())
+                        .andExpect(content().string("Producto no encontrado"));
+        }
+
+        @Test
         void testVerificarDisponibilidadNotFound() throws Exception {
         when(service.verificarDisponibilidad(1L, 5))
                 .thenThrow(new RuntimeException("Producto no encontrado"));
-        mockMvc.perform(get("/api/inventario/disponibilidad/1/5"))
+        mockMvc.perform(get("/api/v1/inventario/disponibilidad/1/5"))
                 .andExpect(status().isNotFound());
         verify(service).verificarDisponibilidad(1L, 5);
         }
@@ -367,7 +381,7 @@ class InvControllerTest {
                 LogDTO logEnviado = new LogDTO(
                                 null,
                                 "inventario",
-                                "/api/inventario/addprod",
+                                "/api/v1/inventario/addprod",
                                 "POST",
                                 201,
                                 120L,
@@ -379,7 +393,7 @@ class InvControllerTest {
                 LogDTO logGuardado = new LogDTO(
                                 1L,
                                 "inventario",
-                                "/api/inventario/addprod",
+                                "/api/v1/inventario/addprod",
                                 "POST",
                                 201,
                                 120L,
@@ -390,7 +404,7 @@ class InvControllerTest {
 
                 when(logservice.guardar(any(LogDTO.class))).thenReturn(logGuardado);
 
-                mockMvc.perform(post("/api/inventario/Logs")
+                mockMvc.perform(post("/api/v1/inventario/logs")
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .content(objectMapper.writeValueAsString(logEnviado)))
                         .andExpect(status().isOk())
@@ -410,7 +424,7 @@ class InvControllerTest {
                 producto.setActivo(false);
                 when(service.deshabilitarProducto(2L)).thenReturn(producto);
 
-                mockMvc.perform(patch("/api/inventario/productos/2/deshabilitar"))
+                mockMvc.perform(patch("/api/v1/inventario/productos/2/deshabilitar"))
                         .andExpect(status().isOk())
                         .andExpect(jsonPath("$.activo").value(false));
         }
@@ -420,7 +434,7 @@ class InvControllerTest {
                 when(service.deshabilitarProducto(99L))
                         .thenThrow(new RuntimeException("Producto no encontrado"));
 
-                mockMvc.perform(patch("/api/inventario/productos/99/deshabilitar"))
+                mockMvc.perform(patch("/api/v1/inventario/productos/99/deshabilitar"))
                         .andExpect(status().isNotFound());
         }
 
@@ -430,9 +444,19 @@ class InvControllerTest {
                 producto.setActivo(true);
                 when(service.habilitarProducto(2L)).thenReturn(producto);
 
-                mockMvc.perform(patch("/api/inventario/productos/2/habilitar"))
+                mockMvc.perform(patch("/api/v1/inventario/productos/2/habilitar"))
                         .andExpect(status().isOk())
                         .andExpect(jsonPath("$.activo").value(true));
+        }
+
+        @Test
+        void testHabilitarProductoNoEncontrado() throws Exception {
+                when(service.habilitarProducto(99L))
+                        .thenThrow(new RuntimeException("Producto no encontrado"));
+
+                mockMvc.perform(patch("/api/v1/inventario/productos/99/habilitar"))
+                        .andExpect(status().isNotFound())
+                        .andExpect(content().string("Producto no encontrado"));
         }
 
         // ---------- Descuentos ----------
@@ -443,7 +467,7 @@ class InvControllerTest {
                 producto.setDescuentoPorcentaje(15.0);
                 when(service.aplicarDescuentoPorId(2L, 15.0)).thenReturn(producto);
 
-                mockMvc.perform(patch("/api/inventario/productos/2/descuento/15.0"))
+                mockMvc.perform(patch("/api/v1/inventario/productos/2/descuento/15.0"))
                         .andExpect(status().isOk())
                         .andExpect(jsonPath("$.descuentoPorcentaje").value(15.0));
         }
@@ -453,7 +477,7 @@ class InvControllerTest {
                 when(service.aplicarDescuentoPorId(2L, 150.0))
                         .thenThrow(new IllegalArgumentException("El descuento debe estar entre 0 y 100"));
 
-                mockMvc.perform(patch("/api/inventario/productos/2/descuento/150.0"))
+                mockMvc.perform(patch("/api/v1/inventario/productos/2/descuento/150.0"))
                         .andExpect(status().isBadRequest());
         }
 
@@ -463,7 +487,7 @@ class InvControllerTest {
                 producto.setDescuentoPorcentaje(0.0);
                 when(service.quitarDescuento(2L)).thenReturn(producto);
 
-                mockMvc.perform(delete("/api/inventario/productos/2/descuento"))
+                mockMvc.perform(delete("/api/v1/inventario/productos/2/descuento"))
                         .andExpect(status().isOk())
                         .andExpect(jsonPath("$.descuentoPorcentaje").value(0.0));
         }
@@ -474,7 +498,7 @@ class InvControllerTest {
                 producto.setDescuentoPorcentaje(20.0);
                 when(service.aplicarDescuentoPorCategoria(1L, 20.0)).thenReturn(List.of(producto));
 
-                mockMvc.perform(patch("/api/inventario/categorias/1/descuento/20.0"))
+                mockMvc.perform(patch("/api/v1/inventario/categorias/1/descuento/20.0"))
                         .andExpect(status().isOk())
                         .andExpect(jsonPath("$[0].descuentoPorcentaje").value(20.0));
         }
@@ -485,7 +509,7 @@ class InvControllerTest {
                         .thenThrow(new org.springframework.web.server.ResponseStatusException(
                                 org.springframework.http.HttpStatus.NOT_FOUND, "No hay productos"));
 
-                mockMvc.perform(patch("/api/inventario/categorias/1/descuento/20.0"))
+                mockMvc.perform(patch("/api/v1/inventario/categorias/1/descuento/20.0"))
                         .andExpect(status().isNotFound());
         }
 }

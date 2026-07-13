@@ -10,6 +10,9 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import java.util.Map;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -29,10 +32,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @Transactional
 class InvControllerIT {
 
-
     @Autowired
     private MockMvc mockMvc;
-
 
     @Autowired
     private ObjectMapper objectMapper;
@@ -48,7 +49,6 @@ class InvControllerIT {
 
     @BeforeEach
     void limpiarBD() {
-
         productoRepository.deleteAllInBatch();
         categoriaRepository.deleteAllInBatch();
 
@@ -57,32 +57,30 @@ class InvControllerIT {
 
     @Test
     void testCrearProducto() throws Exception {
-
-
         Categoria categoria = new Categoria();
-
         categoria.setNombre("Periféricos");
         categoria.setDescripcion("Accesorios de computador");
-
-
         categoria = categoriaRepository.save(categoria);
+        Map<String, Object> productoJson = Map.of(
+                "nombre", "Mouse Gamer",
+                "precio", 25000.0,
+                "stock", 10,
+                "categoria", Map.of(
+                        "id", categoria.getId(),
+                        "nombre", categoria.getNombre(),
+                        "descripcion", categoria.getDescripcion()
+                )
+        );
 
-
-        Producto producto = new Producto();
-
-        producto.setNombre("Mouse Gamer");
-        producto.setPrecio(25000.0);
-        producto.setStock(10);
-        producto.setCategoria(categoria);
-
-
-
-        mockMvc.perform(post("/api/inventario/addprod")
+        mockMvc.perform(post("/api/v1/inventario/addprod")
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(producto)))
+                .content(objectMapper.writeValueAsString(productoJson)))
+                .andExpect(status().isCreated());
 
-                .andExpect(status().isCreated())
-                .andExpect(content().string("Producto registrado"));
-
+        assertEquals(1, productoRepository.count());
+        Producto productoGuardado = productoRepository.findAll().get(0);
+        assertEquals("Mouse Gamer", productoGuardado.getNombre());
+        assertEquals(25000.0, productoGuardado.getPrecio(), 0.0001);
+        assertEquals(10, productoGuardado.getStock());
     }
 }

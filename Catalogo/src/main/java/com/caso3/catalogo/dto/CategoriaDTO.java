@@ -8,7 +8,14 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-
+/**
+ * Representa la categoría de un producto tal como la expone la API de Inventario.
+ * Antes era un enum; ahora refleja la entidad Categoria (id, nombre, descripcion)
+ * para que la deserialización vía Feign coincida con el JSON real de Inventario.
+ * Es @Entity porque ProductoDTO (también entidad local de Catalogo) la referencia
+ * vía @ManyToOne; Catalogo no crea categorías, solo recibe y guarda lo que llega
+ * de Inventario.
+ */
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
@@ -16,6 +23,7 @@ import lombok.NoArgsConstructor;
 @Table(name = "categorias")
 public class CategoriaDTO {
 
+    /** Igual que en ProductoDTO: el id viene siempre de Inventario, no se autogenera. */
     @Id
     private Long id;
 

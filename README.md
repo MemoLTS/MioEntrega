@@ -13,6 +13,9 @@ Backups
 
 Todos los servicios exponen APIs REST utilizando JSON.
 
+swagger
+http://localhost:8080/swagger-ui/index.html
+
 API Inventario
 Permite administrar productos, stock y registros de inventario.
 Base URL

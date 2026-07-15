@@ -1,8 +1,0 @@
-com\pruebas\unitarias\main\ApiApplicationTests.class
-com\pruebas\unitarias\service\LogServiceTest.class
-com\pruebas\unitarias\model\ProductoDTOTest.class
-com\pruebas\unitarias\model\CategoriaDTOTest.class
-com\pruebas\unitarias\service\CatalogoServiceTest.class
-com\pruebas\unitarias\controller\CatalogControllerTest.class
-com\pruebas\unitarias\controller\CatalogoControllerIT.class
-com\pruebas\unitarias\exception\GlobalExceptionHandlerTest.class

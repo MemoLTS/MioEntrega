@@ -58,7 +58,7 @@ class BackupControllerTest {
         when(backupService.listar())
                 .thenReturn(List.of(backup));
         mockMvc.perform(
-                get("/api/v1/backups")
+                get("/api/v1/backup")
         )
         .andExpect(status().isOk());
     }
@@ -75,7 +75,7 @@ class BackupControllerTest {
         )
         .thenReturn(backup);
         mockMvc.perform(
-                post("/api/v1/backups")
+                post("/api/v1/backup")
         )
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.id").value(1))
@@ -93,7 +93,7 @@ class BackupControllerTest {
         )
         .thenReturn(backup);
         mockMvc.perform(
-                get("/api/v1/backups/ultimo")
+                get("/api/v1/backup/ultimo")
         )
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.tipo").value("INICIAL"));
@@ -109,7 +109,7 @@ class BackupControllerTest {
         when(configService.activar())
                 .thenReturn(config);
 
-        mockMvc.perform(put("/api/v1/backups/activar"))
+        mockMvc.perform(put("/api/v1/backup/activar"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.activo")
                         .value(true));
@@ -127,7 +127,7 @@ class BackupControllerTest {
         when(configService.desactivar())
                 .thenReturn(config);
 
-        mockMvc.perform(put("/api/v1/backups/desactivar"))
+        mockMvc.perform(put("/api/v1/backup/desactivar"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.activo")
                         .value(false));
@@ -144,7 +144,7 @@ class BackupControllerTest {
         when(configService.obtener())
                 .thenReturn(config);
 
-        mockMvc.perform(get("/api/v1/backups/config"))
+        mockMvc.perform(get("/api/v1/backup/config"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.activo")
                         .value(true));

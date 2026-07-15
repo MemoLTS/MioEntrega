@@ -1,7 +1,12 @@
 package com.caso3.inventario.controller;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+
 import java.util.List;
-import java.util.Optional;
 
 import jakarta.validation.Valid;
 
@@ -70,6 +75,13 @@ public class InvController {
     public ResponseEntity<LogDTO> guardarLogs(@RequestBody LogDTO log) {
         return ResponseEntity.ok(logservice.guardar(log));
     }
+    @Operation(summary = "Listar todos los productos")
+    @ApiResponses({
+        @ApiResponse(responseCode = "200", description = "Lista de productos",
+            content = @Content(schema = @Schema(implementation = Producto.class))),
+        @ApiResponse(responseCode = "500", description = "Error interno",
+            content = @Content(schema = @Schema(implementation = String.class)))
+    })
     @GetMapping("/prods")
     public ResponseEntity<?> getProds() {
         try {
@@ -81,6 +93,13 @@ public class InvController {
         }
     }
 
+    @Operation(summary = "Registrar un nuevo producto")
+    @ApiResponses({
+        @ApiResponse(responseCode = "201", description = "Producto registrado",
+            content = @Content(schema = @Schema(implementation = String.class))),
+        @ApiResponse(responseCode = "400", description = "Error al registrar producto",
+            content = @Content(schema = @Schema(implementation = String.class)))
+    })
     @PostMapping("/addprod")
     public ResponseEntity<?> postProducto(@Valid @RequestBody Producto producto) {
         Producto prod = service.register(producto);
@@ -93,11 +112,20 @@ public class InvController {
     }
 
     @GetMapping("/productos/{id}")
-    public Optional<Producto>getProducto(@PathVariable Long id) {
-        return service.readByid(id);
+    public ResponseEntity<Producto> getProducto(@PathVariable Long id) {
+        return service.readByid(id)
+                .map(ResponseEntity::ok)
+                .orElseGet(() -> ResponseEntity.notFound().build());
     }
     
 
+    @Operation(summary = "Actualizar nombre y precio de un producto")
+    @ApiResponses({
+        @ApiResponse(responseCode = "200", description = "Producto actualizado",
+            content = @Content(schema = @Schema(implementation = String.class))),
+        @ApiResponse(responseCode = "404", description = "Producto no encontrado",
+            content = @Content(schema = @Schema(implementation = String.class)))
+    })
     @PutMapping("/updateprod/{id}")
     public ResponseEntity<?> updateProducto(
             @PathVariable Long id,
@@ -115,6 +143,13 @@ public class InvController {
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Producto no encontrado");
     }
 
+    @Operation(summary = "Actualizar el stock de un producto")
+    @ApiResponses({
+        @ApiResponse(responseCode = "200", description = "Stock actualizado",
+            content = @Content(schema = @Schema(implementation = String.class))),
+        @ApiResponse(responseCode = "404", description = "Producto no encontrado",
+            content = @Content(schema = @Schema(implementation = String.class)))
+    })
     @PutMapping("/updateprod/{id}/{stock}")
     public ResponseEntity<?> updateStock(
             @PathVariable Long id,
@@ -131,6 +166,13 @@ public class InvController {
     public ResponseEntity<StockResponse> consultarStock(@PathVariable Long id) {
         return ResponseEntity.ok(service.consultarStock(id));
     }
+    @Operation(summary = "Eliminar un producto")
+    @ApiResponses({
+        @ApiResponse(responseCode = "200", description = "Producto eliminado",
+            content = @Content(schema = @Schema(implementation = String.class))),
+        @ApiResponse(responseCode = "404", description = "Producto no encontrado",
+            content = @Content(schema = @Schema(implementation = String.class)))
+    })
     @DeleteMapping("/deleteprod/{id}")
     public ResponseEntity<?> deleteProducto(@PathVariable Long id) {
         try {
@@ -166,6 +208,12 @@ public class InvController {
                 .toList();
         return ResponseEntity.ok(productos);
     }
+    @Operation(summary = "Verificar si un producto está bajo el stock mínimo")
+    @ApiResponses({
+        @ApiResponse(responseCode = "200", description = "Resultado de la verificación"),
+        @ApiResponse(responseCode = "404", description = "Producto no encontrado",
+            content = @Content(schema = @Schema(implementation = String.class)))
+    })
     @GetMapping("/alerta/{id}")
     public ResponseEntity<?> verificarBajoStock(@PathVariable Long id) {
         try {
@@ -176,6 +224,12 @@ public class InvController {
                     .body("Producto no encontrado");
         }
     }
+    @Operation(summary = "Verificar disponibilidad de stock para una cantidad solicitada")
+    @ApiResponses({
+        @ApiResponse(responseCode = "200", description = "Resultado de la verificación"),
+        @ApiResponse(responseCode = "404", description = "Producto no encontrado",
+            content = @Content(schema = @Schema(implementation = String.class)))
+    })
     @GetMapping("/disponibilidad/{id}/{cantidad}")
     public ResponseEntity<?> verificarDisponibilidad(
             @PathVariable Long id,
@@ -202,6 +256,13 @@ public class InvController {
         return ResponseEntity.ok("Stock actualizado y log registrado");
     }
 
+    @Operation(summary = "Deshabilitar un producto")
+    @ApiResponses({
+        @ApiResponse(responseCode = "200", description = "Producto deshabilitado",
+            content = @Content(schema = @Schema(implementation = Producto.class))),
+        @ApiResponse(responseCode = "404", description = "Producto no encontrado",
+            content = @Content(schema = @Schema(implementation = String.class)))
+    })
     @PatchMapping("/productos/{id}/deshabilitar")
     public ResponseEntity<?> deshabilitarProducto(@PathVariable Long id) {
         try {
@@ -211,6 +272,13 @@ public class InvController {
         }
     }
 
+    @Operation(summary = "Habilitar un producto")
+    @ApiResponses({
+        @ApiResponse(responseCode = "200", description = "Producto habilitado",
+            content = @Content(schema = @Schema(implementation = Producto.class))),
+        @ApiResponse(responseCode = "404", description = "Producto no encontrado",
+            content = @Content(schema = @Schema(implementation = String.class)))
+    })
     @PatchMapping("/productos/{id}/habilitar")
     public ResponseEntity<?> habilitarProducto(@PathVariable Long id) {
         try {
@@ -220,6 +288,15 @@ public class InvController {
         }
     }
 
+    @Operation(summary = "Aplicar un descuento a un producto por su id")
+    @ApiResponses({
+        @ApiResponse(responseCode = "200", description = "Descuento aplicado",
+            content = @Content(schema = @Schema(implementation = Producto.class))),
+        @ApiResponse(responseCode = "400", description = "Porcentaje inválido",
+            content = @Content(schema = @Schema(implementation = String.class))),
+        @ApiResponse(responseCode = "404", description = "Producto no encontrado",
+            content = @Content(schema = @Schema(implementation = String.class)))
+    })
     @PatchMapping("/productos/{id}/descuento/{porcentaje}")
     public ResponseEntity<?> aplicarDescuentoPorId(
             @PathVariable Long id,
@@ -233,6 +310,13 @@ public class InvController {
         }
     }
 
+    @Operation(summary = "Quitar el descuento de un producto")
+    @ApiResponses({
+        @ApiResponse(responseCode = "200", description = "Descuento removido",
+            content = @Content(schema = @Schema(implementation = Producto.class))),
+        @ApiResponse(responseCode = "404", description = "Producto no encontrado",
+            content = @Content(schema = @Schema(implementation = String.class)))
+    })
     @DeleteMapping("/productos/{id}/descuento")
     public ResponseEntity<?> quitarDescuento(@PathVariable Long id) {
         try {
@@ -242,6 +326,14 @@ public class InvController {
         }
     }
 
+    @Operation(summary = "Aplicar un descuento a todos los productos de una categoría")
+    @ApiResponses({
+        @ApiResponse(responseCode = "200", description = "Descuento aplicado a la categoría"),
+        @ApiResponse(responseCode = "400", description = "Porcentaje inválido",
+            content = @Content(schema = @Schema(implementation = String.class))),
+        @ApiResponse(responseCode = "404", description = "Categoría no encontrada",
+            content = @Content(schema = @Schema(implementation = String.class)))
+    })
     @PatchMapping("/categorias/{idCategoria}/descuento/{porcentaje}")
     public ResponseEntity<?> aplicarDescuentoPorCategoria(
             @PathVariable Long idCategoria,

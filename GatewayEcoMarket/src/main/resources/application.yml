@@ -4,6 +4,38 @@ server:
 spring:
   application:
     name: GatewayEcoMarket
+
+# NOTA: cada microservicio expone su OpenAPI en su propia raíz (http://localhost:<puerto>/v3/api-docs),
+# ya que ninguno define un context-path global. Estas URLs se acceden directo a cada servicio.
+springdoc:
+  swagger-ui:
+    urls:
+      - name: Usuario
+        url: http://localhost:9090/v3/api-docs
+      - name: Tienda
+        url: http://localhost:8889/v3/api-docs
+      - name: Soporte
+        url: http://localhost:9004/v3/api-docs
+      - name: Inventario
+        url: http://localhost:8090/v3/api-docs
+      - name: Catalogo
+        url: http://localhost:8085/v3/api-docs
+      - name: Backup
+        url: http://localhost:8086/v3/api-docs
+      - name: Monitor
+        url: http://localhost:8089/v3/api-docs
+      - name: Proveedor
+        url: http://localhost:8087/v3/api-docs
+      - name: Pedido
+        url: http://localhost:8084/v3/api-docs
+      - name: Envio
+        url: http://localhost:8082/v3/api-docs
+      - name: Ruta
+        url: http://localhost:8099/v3/api-docs
+      - name: Factura
+        url: http://localhost:8888/v3/api-docs
+      - name: Pago
+        url: http://localhost:8083/v3/api-docs
   cloud:
     gateway:
       globalcors:
@@ -23,7 +55,7 @@ spring:
         - id: tienda
           uri: http://localhost:8889
           predicates:
-            - Path=/api/v1/tienda/**
+            - Path=/api/v1/tienda/**,/api/v1/ProductoAsociadoTienda/**,/api/v1/ReporteTienda/**,/api/v1/HorarioPersonal/**,/api/v1/HorarioTienda/**,/api/v1/AsignacionPersonal/**
 
         - id: soporte
           uri: http://localhost:9004
@@ -42,42 +74,42 @@ spring:
             - Path=/api/v1/catalogo/**
 
         - id: backup
-          uri: http://localhost:8089
+          uri: http://localhost:8086
           predicates:
             - Path=/api/v1/backup/**
 
         - id: monitor
-          uri: http://localhost:8087
+          uri: http://localhost:8089
           predicates:
             - Path=/api/v1/monitor/**
 
         # ─── CristobalMerino (requieren server.port en su application.properties) ──
         - id: proveedor
-          uri: http://localhost:9100
+          uri: http://localhost:8087
           predicates:
             - Path=/api/proveedores/**
 
         - id: pedido
-          uri: http://localhost:9101
+          uri: http://localhost:8084
           predicates:
             - Path=/api/pedidos/**
 
         - id: envio
-          uri: http://localhost:9102
+          uri: http://localhost:8082
           predicates:
             - Path=/api/envios/**
 
         - id: ruta
-          uri: http://localhost:9103
+          uri: http://localhost:8099
           predicates:
             - Path=/api/rutas/**
 
         - id: factura
-          uri: http://localhost:9104
+          uri: http://localhost:8888
           predicates:
             - Path=/api/facturas/**
 
         - id: pago
-          uri: http://localhost:9105
+          uri: http://localhost:8083
           predicates:
             - Path=/api/pagos/**

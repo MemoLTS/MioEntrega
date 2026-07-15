@@ -22,13 +22,13 @@ class BackupControllerIT {
 
     @Test
     void shouldListBackupsSuccessfully() throws Exception {
-        mockMvc.perform(get("/api/v1/backups"))
+        mockMvc.perform(get("/api/v1/backup"))
                 .andExpect(status().isOk());
     }
 
     @Test
     void shouldCreateBackupSuccessfully() throws Exception {
-        mockMvc.perform(post("/api/v1/backups"))
+        mockMvc.perform(post("/api/v1/backup"))
                 .andExpect(status().isOk());
     }
 }

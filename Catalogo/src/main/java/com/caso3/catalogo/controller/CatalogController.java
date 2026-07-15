@@ -35,7 +35,7 @@ public class CatalogController {
     }
 
     @GetMapping("/PorNombre/{nombre}")
-    public ResponseEntity<Object> porNombre(
+    public ResponseEntity<List<ProductoDTO>> porNombre(
             @PathVariable String nombre){
 
         return ResponseEntity.ok(
